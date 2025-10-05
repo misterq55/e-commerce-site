@@ -16,33 +16,46 @@ function NavBar() {
   }
 
   return (
-    <nav className="p-4 bg-gray-800 text-white">
-      <div className="flex justify-between items-center max-w-7xl mx-auto">
-        <Link to="/" className="text-xl font-bold">
-          Boilerplate
-        </Link>
+    <nav className="bg-black border-b border-gray-900 shadow-lg">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-20">
+          <Link
+            to="/"
+            className="text-white text-2xl sm:text-3xl font-semibold hover:text-gray-300 transition-colors"
+          >
+            Boilerplate
+          </Link>
 
-        <div className="flex items-center gap-4">
-          {user ? (
-            <>
-              <span>Welcome, {user.name}</span>
-              <label
-                onClick={handleLogout}
-                className="px-4 py-2 bg-red-600 rounded hover:bg-red-700 transition"
-              >
-                Logout
-              </label>
-            </>
-          ) : (
-            <>
-              <Link to="/login" className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 transition">
-                Login
-              </Link>
-              <Link to="/register" className="px-4 py-2 bg-green-600 rounded hover:bg-green-700 transition">
-                Register
-              </Link>
-            </>
-          )}
+          <div className="flex items-center space-x-4 sm:space-x-6">
+            {user ? (
+              <>
+                <span className="hidden md:inline text-gray-300 text-sm font-medium">
+                  환영합니다, {user.name}님
+                </span>
+                <span
+                  onClick={handleLogout}
+                  className="hidden md:inline text-gray-300 text-sm font-medium"
+                >
+                  Logout
+                </span>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/register"
+                  className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors"
+                >
+                  Register
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </nav>
