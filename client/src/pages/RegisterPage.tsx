@@ -45,7 +45,7 @@ function RegisterPage() {
           type="submit"
           disabled={isLoading}
         >
-          {isLoading ? 'Loading...' : 'Login'}
+          {isLoading ? 'Loading...' : 'Register'}
         </button>
       </div>
     </form>
