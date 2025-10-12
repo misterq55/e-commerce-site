@@ -1,19 +1,10 @@
 import { Link } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
-import { logoutUser } from '../../store/userSlice'
-import type { AppDispatch, RootState } from '../../store/store'
+import { useSelector } from 'react-redux'
+import type { RootState } from '../../store/store'
+import UserInfo from '../common/UserInfo'
 
 function NavBar() {
-  const dispatch = useDispatch<AppDispatch>()
   const { user } = useSelector((state: RootState) => state.user)
-
-  const handleLogout = async () => {
-    try {
-      await dispatch(logoutUser()).unwrap()
-    } catch (error) {
-      console.log(error)
-    }
-  }
 
   return (
     <nav className="bg-black border-b border-gray-900 shadow-lg">
@@ -28,17 +19,7 @@ function NavBar() {
 
           <div className="flex items-center space-x-4 sm:space-x-6">
             {user ? (
-              <>
-                <span className="hidden md:inline text-gray-300 text-sm font-medium">
-                  환영합니다, {user.name}님
-                </span>
-                <span
-                  onClick={handleLogout}
-                  className="hidden md:inline text-gray-300 text-sm font-medium"
-                >
-                  Logout
-                </span>
-              </>
+              <UserInfo />
             ) : (
               <>
                 <Link
