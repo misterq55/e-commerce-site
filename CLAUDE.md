@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Structure
 
-This is a boilerplate project with a basic Express server setup:
+This is a e commerce site project with a basic Express server setup:
 
 - `server/` - Express.js + TypeORM backend (port 3000)
 - `client/` - React + Vite + Redux frontend (port 5173)

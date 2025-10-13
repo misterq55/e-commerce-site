@@ -14,7 +14,7 @@ function NavBar() {
             to="/"
             className="text-white text-2xl sm:text-3xl font-semibold hover:text-gray-300 transition-colors"
           >
-            Boilerplate
+            LOGO
           </Link>
 
           <div className="flex items-center space-x-4 sm:space-x-6">
