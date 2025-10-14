@@ -1,29 +1,32 @@
-import { useState } from "react"
+import { useForm } from "react-hook-form"
 import { useDispatch, useSelector } from "react-redux"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import Input from "../components/common/Input"
 import { registerUser } from "../store/userSlice"
 import type { AppDispatch, RootState } from "../store/store"
+import { userEmail, userName, userPassword, userConfirmedPassword } from "../utils/validationRules"
+
+interface RegisterForm {
+  email: string
+  name: string
+  password: string
+  confirmedPassword: string
+}
 
 function RegisterPage() {
-  const [email, setEmail] = useState('')
-  const [name, setName] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmedPassword, setConfirmesPassword] = useState('')
+  const { register, handleSubmit, formState: { errors }, watch } = useForm<RegisterForm>()
   const dispatch = useDispatch<AppDispatch>()
   const navigate = useNavigate()
   const { isLoading, error } = useSelector((state: RootState) => state.user)
+  const password = watch('password')
 
-  const onSubmitHandler = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (password !== confirmedPassword) {
-      return alert('비밀번호와 비밀번호 확인이 다릅니다')
-    }
-
+  const onSubmit = async (data: RegisterForm) => {
     try {
-      await dispatch(registerUser({ email, name, password })).unwrap()
-      // Register successful, redirect to home
+      await dispatch(registerUser({
+        email: data.email,
+        name: data.name,
+        password: data.password
+      })).unwrap()
       navigate('/')
     } catch (error) {
       console.log(error)
@@ -31,11 +34,34 @@ function RegisterPage() {
   }
 
   return (
-    <form className="w-80 p-8 bg-white rounded-lg shadow-md" onSubmit={onSubmitHandler}>
-      <Input label="Email" type="email" value={email} onChange={setEmail} />
-      <Input label="Name" type="name" value={name} onChange={setName} />
-      <Input label="Password" type="password" value={password} onChange={setPassword} />
-      <Input label="Confirm Password" type="password" value={confirmedPassword} onChange={setConfirmesPassword} />
+    <form className="w-80 p-8 bg-white rounded-lg shadow-md" onSubmit={handleSubmit(onSubmit)}>
+      <Input
+        label="Email"
+        type="email"
+        {...register('email', userEmail)}
+        error={errors.email?.message}
+      />
+
+      <Input
+        label="Name"
+        type="text"
+        {...register('name', userName)}
+        error={errors.name?.message}
+      />
+
+      <Input
+        label="Password"
+        type="password"
+        {...register('password', userPassword)}
+        error={errors.password?.message}
+      />
+
+      <Input
+        label="Confirm Password"
+        type="password"
+        {...register('confirmedPassword', userConfirmedPassword(password))}
+        error={errors.confirmedPassword?.message}
+      />
 
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
 
@@ -48,6 +74,13 @@ function RegisterPage() {
           {isLoading ? 'Loading...' : 'Register'}
         </button>
       </div>
+
+      <p className="text-center text-sm text-gray-600">
+        아이디가 있다면?{' '}
+        <Link to="/login" className="text-blue-600 hover:text-blue-800 font-medium">
+          로그인
+        </Link>
+      </p>
     </form>
   )
 }

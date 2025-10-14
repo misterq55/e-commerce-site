@@ -8,8 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a e commerce site project with a basic Express server setup:
 
-- `server/` - Express.js + TypeORM backend (port 3000)
-- `client/` - React + Vite + Redux frontend (port 5173)
+- `backend/` - Express.js + TypeORM backend (port 3000)
+- `frontend/` - React + Vite + Redux frontend (port 5173)
 - `docker-compose.yml` - PostgreSQL 16 database
 
 ## Quick Start
@@ -18,11 +18,11 @@ This is a e commerce site project with a basic Express server setup:
 # 1. Start database
 docker-compose up -d
 
-# 2. Start server (Terminal 1)
-cd server && npm install && npm run dev
+# 2. Start backend (Terminal 1)
+cd backend && npm install && npm run dev
 
-# 3. Start client (Terminal 2)
-cd client && npm install && npm run dev
+# 3. Start frontend (Terminal 2)
+cd frontend && npm install && npm run dev
 
 # Or use concurrently (from root)
 npm install
@@ -36,7 +36,7 @@ Visit: http://localhost:5173
 ### Root (Concurrently)
 
 ```bash
-# Run both server and client
+# Run both backend and frontend
 npm run dev
 ```
 
@@ -53,13 +53,13 @@ docker-compose down
 docker-compose logs -f postgres
 ```
 
-### Server Development
+### Backend Development
 
-All server commands should be run from the `server/` directory:
+All backend commands should be run from the `backend/` directory:
 
 ```bash
 # Install dependencies
-cd server && npm install
+cd backend && npm install
 
 # Start development server (with hot reload)
 npm run dev
@@ -73,9 +73,9 @@ npm start
 
 ## Architecture Notes
 
-### Server (Express.js + TypeORM)
+### Backend (Express.js + TypeORM)
 
-- **Entry point**: `server/src/index.ts`
+- **Entry point**: `backend/src/index.ts`
 - **Runtime**: TypeScript with `ts-node` (CommonJS module system)
 - **Database**: PostgreSQL 16 (via Docker)
 - **ORM**: TypeORM with reflect-metadata
@@ -84,7 +84,7 @@ npm start
 
 #### File Structure
 ```
-server/src/
+backend/src/
 ├── entities/
 │   └── User.ts               # User entity with auth & validation
 ├── middlewares/
@@ -95,7 +95,7 @@ server/src/
 ├── data-source.ts            # TypeORM DataSource config
 └── index.ts                  # Express app entry point
 
-server/
+backend/
 ├── .env                      # JWT_SECRET, CLIENT_URL, DB credentials
 └── tsconfig.json             # CommonJS config
 ```
@@ -142,24 +142,25 @@ export class User {
 
 Import entities in `data-source.ts` by adding them to the entities array.
 
-### Client (React + Vite + TypeScript)
+### Frontend (React + Vite + TypeScript)
 
 - **Framework**: React 19 with TypeScript
 - **Build Tool**: Vite 7
 - **Styling**: Tailwind CSS v4
-- **State Management**: Redux Toolkit
+- **State Management**: Redux Toolkit + redux-persist
+- **Form Management**: react-hook-form
 - **Routing**: React Router v7
 - **API Client**: Axios with custom instance
 - **Port**: 5173 (dev server)
 
 #### File Structure
 ```
-client/src/
+frontend/src/
 ├── api/
 │   └── axios.ts              # Axios instance with baseURL config
 ├── components/
 │   ├── common/
-│   │   └── Input.tsx         # Reusable input component
+│   │   └── Input.tsx         # Reusable input component (forwardRef)
 │   ├── layout/
 │   │   ├── AuthLayout.tsx    # Layout for login/register (no NavBar/Footer)
 │   │   ├── MainLayout.tsx    # Layout with NavBar & Footer
@@ -168,16 +169,18 @@ client/src/
 │   └── ProtectedRoute.tsx    # Route guard for authenticated users
 ├── pages/
 │   ├── LandingPage.tsx       # Public home page
-│   ├── LoginPage.tsx         # Login form
-│   └── RegisterPage.tsx      # Registration form
+│   ├── LoginPage.tsx         # Login form (react-hook-form)
+│   └── RegisterPage.tsx      # Registration form (react-hook-form)
 ├── store/
-│   ├── store.ts              # Redux store configuration
+│   ├── store.ts              # Redux store + redux-persist config
 │   └── userSlice.ts          # User authentication slice
+├── utils/
+│   └── validationRules.ts    # Form validation rules
 ├── App.tsx                   # Main app with routes
-├── main.tsx                  # Entry point with Redux Provider
+├── main.tsx                  # Entry point with Redux Provider + PersistGate
 └── index.css                 # Tailwind directives
 
-client/
+frontend/
 ├── .env                      # VITE_API_URL=http://localhost:3000
 ├── tailwind.config.js        # Tailwind v4 config
 └── postcss.config.js         # PostCSS with @tailwindcss/postcss
@@ -187,7 +190,7 @@ client/
 
 ```bash
 # Install dependencies
-cd client && npm install
+cd frontend && npm install
 
 # Start development server
 npm run dev
@@ -204,17 +207,26 @@ npm run preview
 **Authentication Flow**
 - JWT stored in HttpOnly cookies (set by server)
 - Redux manages user state globally
+- redux-persist keeps state across page refreshes (localStorage)
 - Auto-fetch user on app load (`fetchCurrentUser`)
 - Protected routes redirect to `/login` if not authenticated
 - Login/Register pages redirect to `/` if already authenticated
 
-**State Management (Redux Toolkit)**
+**State Management (Redux Toolkit + redux-persist)**
 - `userSlice`: User authentication state
   - `loginUser`: Login async thunk
   - `registerUser`: Register async thunk
   - `logoutUser`: Logout async thunk
   - `fetchCurrentUser`: Get current user from cookie
 - TypeScript types: `RootState`, `AppDispatch`
+- Persisted to localStorage for seamless page refreshes
+
+**Form Management (react-hook-form)**
+- Used in LoginPage and RegisterPage
+- Automatic form validation with custom rules
+- Validation rules centralized in `utils/validationRules.ts`
+- Input component uses `forwardRef` for react-hook-form compatibility
+- Benefits: Less re-renders, cleaner code, built-in validation
 
 **Routing**
 - Public routes: `/` (LandingPage)
@@ -242,7 +254,7 @@ npm run preview
 
 #### Environment Variables
 
-Create `.env` in client directory:
+Create `.env` in frontend directory:
 ```env
 VITE_API_URL=http://localhost:3000
 ```

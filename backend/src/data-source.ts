@@ -10,7 +10,7 @@ export const AppDataSource = new DataSource({
   port: parseInt(process.env.DB_PORT || '5432'),
   username: process.env.DB_USERNAME || 'admin',
   password: process.env.DB_PASSWORD || 'admin123',
-  database: process.env.DB_NAME || 'ecommerce',
+  database: process.env.DB_DATABASE || 'ecommerce',
   synchronize: true, // 개발 환경에서만 사용, 프로덕션에서는 false
   logging: false,
   entities: [User],
