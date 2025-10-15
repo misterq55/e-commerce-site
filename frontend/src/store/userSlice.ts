@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import { toast } from 'react-toastify'
 import api from '../api/axios'
 
 interface User {
@@ -73,6 +74,23 @@ const userSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    // Register
+    builder
+      .addCase(registerUser.pending, (state) => {
+        state.isLoading = true
+        state.error = null
+      })
+      .addCase(registerUser.fulfilled, (state, action) => {
+        state.isLoading = false
+        state.user = action.payload
+        toast.success('회원가입에 성공했습니다!')
+      })
+      .addCase(registerUser.rejected, (state, action) => {
+        state.isLoading = false
+        state.error = action.error.message || 'Register failed'
+        toast.error(action.error.message || '회원가입에 실패했습니다.')
+      })
+
     // Login
     builder
       .addCase(loginUser.pending, (state) => {
@@ -82,10 +100,12 @@ const userSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.isLoading = false
         state.user = action.payload
+        toast.success('로그인에 성공했습니다!')
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false
         state.error = action.error.message || 'Login failed'
+        toast.error(action.error.message || '로그인에 실패했습니다.')
       })
 
     // Fetch current user

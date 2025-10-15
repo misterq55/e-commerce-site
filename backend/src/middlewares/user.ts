@@ -26,7 +26,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
         return next()
     } catch (error) {
         console.log(error)
-        // 토큰이 있는데 검증 실패 = 잘못된 토큰
-        return res.status(401).json({ error: "Invalid or expired token" })
+        // 토큰이 잘못되었어도 그냥 통과 (인증 체크는 auth 미들웨어에서)
+        return next()
     }
 }

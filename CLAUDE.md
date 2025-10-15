@@ -244,6 +244,26 @@ npm run preview
 - Responsive layouts with Flexbox
 - Dark NavBar, light backgrounds
 
+**TypeScript Type Management**
+- Current approach: Types defined inline in component files
+  - `userSlice.ts`: `User`, `UserState` interfaces
+  - `LoginPage.tsx`: `LoginForm` interface
+  - `RegisterPage.tsx`: `RegisterForm` interface
+- This is appropriate for the current project size
+- Consider refactoring to domain-based structure when:
+  - Types are reused across multiple files
+  - New domains are added (products, orders, etc.)
+  - Files become too large or complex
+- Recommended future structure:
+  ```
+  frontend/src/
+  ├── features/
+  │   └── auth/
+  │       └── types.ts      # User, LoginFormData, RegisterFormData
+  └── types/
+      └── common.ts         # ApiResponse, LoadingState (global types)
+  ```
+
 #### Adding New Pages
 
 1. Create page component in `src/pages/`
