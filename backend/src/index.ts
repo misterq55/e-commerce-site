@@ -5,7 +5,7 @@ import path from 'path'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import { AppDataSource } from './data-source'
-import authRoutes from './routes/auth'
+import userRoutes from './routes/user'
 import { Request, Response, NextFunction } from 'express'
 
 // .env 파일 로드
@@ -35,7 +35,7 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
-app.use("/api/auth", authRoutes)
+app.use("/api/auth", userRoutes)
 
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   res.status(error.status || 500)
