@@ -91,7 +91,7 @@ backend/src/
 │   ├── user.ts               # Optional auth (sets res.locals.user)
 │   └── auth.ts               # Required auth (401 if no user)
 ├── routes/
-│   └── auth.ts               # /api/auth routes
+│   └── user.ts               # /api/users routes
 ├── data-source.ts            # TypeORM DataSource config
 └── index.ts                  # Express app entry point
 
@@ -101,10 +101,10 @@ backend/
 ```
 
 **API Endpoints**
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login (returns user, sets cookie)
-- `GET /api/auth/logout` - Logout (clears cookie)
-- `GET /api/auth/me` - Get current user (protected)
+- `POST /api/users/register` - Register new user
+- `POST /api/users/login` - Login (returns user, sets cookie)
+- `POST /api/users/logout` - Logout (clears cookie)
+- `GET /api/users/me` - Get current user (protected)
 
 #### Important Configuration Notes
 - **Module System**: CommonJS (NOT ESM) - TypeORM's `emitDecoratorMetadata` requires CommonJS
@@ -120,6 +120,21 @@ backend/
 - TypeORM is configured with `synchronize: true` for development (auto-creates tables from entities)
 - In production, set `synchronize: false` and use migrations instead
 - Connection credentials are in `.env` file
+
+#### Authentication & Security
+- **JWT Storage**: HttpOnly cookies (OWASP recommended approach)
+- **Token Expiration**: 1 hour (`maxAge: 60 * 60 * 1000`)
+- **Cookie Security Flags**:
+  - `httpOnly: true` - Prevents XSS attacks (JavaScript cannot access)
+  - `secure: true` - HTTPS only (in production)
+  - `sameSite: 'strict'` - CSRF protection
+- **Password Hashing**: bcrypt with automatic salting
+- **CORS**: Configured with `credentials: true` for cookie support
+- **Why HttpOnly Cookies vs localStorage**:
+  - ✅ XSS attack protection (token not accessible via JavaScript)
+  - ✅ Automatic cookie transmission with `withCredentials: true`
+  - ✅ Browser handles token management
+  - ⚠️ Requires CSRF protection (handled by SameSite flag)
 
 #### Creating Entities
 All entity properties must use the definite assignment assertion (`!`) to satisfy TypeScript strict mode:
@@ -151,6 +166,7 @@ Import entities in `data-source.ts` by adding them to the entities array.
 - **Form Management**: react-hook-form
 - **Routing**: React Router v7
 - **API Client**: Axios with custom instance
+- **Notifications**: react-toastify v11
 - **Port**: 5173 (dev server)
 
 #### File Structure
@@ -205,12 +221,13 @@ npm run preview
 #### Key Features
 
 **Authentication Flow**
-- JWT stored in HttpOnly cookies (set by server)
+- JWT stored in HttpOnly cookies (set by server, 1-hour expiration)
 - Redux manages user state globally
 - redux-persist keeps state across page refreshes (localStorage)
 - Auto-fetch user on app load (`fetchCurrentUser`)
 - Protected routes redirect to `/login` if not authenticated
 - Login/Register pages redirect to `/` if already authenticated
+- Toast notifications for auth events (success/error messages)
 
 **State Management (Redux Toolkit + redux-persist)**
 - `userSlice`: User authentication state
@@ -236,7 +253,14 @@ npm run preview
 **API Configuration**
 - Axios instance in `src/api/axios.ts`
 - BaseURL from environment variable (`VITE_API_URL`)
-- `withCredentials: true` for cookie support
+- `withCredentials: true` for automatic cookie transmission
+- No manual token management needed (HttpOnly cookies handle it)
+
+**User Notifications (react-toastify)**
+- Toast notifications for authentication events
+- Configured in `App.tsx` with `<ToastContainer>`
+- Used in `userSlice.ts` for success/error messages
+- Position: top-right, 3-second auto-close
 
 **Styling**
 - Tailwind CSS v4 with PostCSS

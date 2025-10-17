@@ -26,7 +26,7 @@ const initialState: UserState = {
 export const registerUser = createAsyncThunk(
   'user/register',
   async ({ email, name, password }: { email: string; name: string; password: string }) => {
-    const response = await api.post('/api/auth/register', {
+    const response = await api.post('/api/users/register', {
       email,
       name,
       password,
@@ -39,7 +39,7 @@ export const registerUser = createAsyncThunk(
 export const loginUser = createAsyncThunk(
   'user/login',
   async ({ email, password }: { email: string; password: string }) => {
-    const response = await api.post('/api/auth/login', {
+    const response = await api.post('/api/users/login', {
       email,
       password,
     })
@@ -51,7 +51,7 @@ export const loginUser = createAsyncThunk(
 export const fetchCurrentUser = createAsyncThunk(
   'user/fetchCurrent',
   async () => {
-    const response = await api.get('/api/auth/me')
+    const response = await api.get('/api/users/me')
     return response.data
   }
 )
@@ -60,7 +60,7 @@ export const fetchCurrentUser = createAsyncThunk(
 export const logoutUser = createAsyncThunk(
   'user/logout',
   async () => {
-    const response = await api.post('/api/auth/logout')
+    const response = await api.post('/api/users/logout')
     return response.data
   }
 )

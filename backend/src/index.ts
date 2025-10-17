@@ -35,7 +35,7 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
-app.use("/api/auth", userRoutes)
+app.use("/api/users", userRoutes)
 
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   res.status(error.status || 500)

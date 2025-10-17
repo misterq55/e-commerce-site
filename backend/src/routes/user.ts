@@ -91,7 +91,7 @@ const login = async (req: Request, res: Response) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7일
+            maxAge: 60 * 60 * 1000 // 1시간
         })
 
         const { password: _, ...userWithoutPassword } = foundUser
@@ -107,7 +107,7 @@ const logout = async (req: Request, res: Response) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7일
+            expires: new Date(0) // 즉시 만료
         })
 
     return res.status(200).json({ success: true })
