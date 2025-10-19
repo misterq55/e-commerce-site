@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(node:*)",
+      "Bash(npm --version)",
+      "Bash(docker:*)",
+      "Bash(docker-compose:*)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []
