@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import { AppDataSource } from './data-source'
 import userRoutes from './routes/user'
+import productRoutes from './routes/product'
 import { Request, Response, NextFunction } from 'express'
 
 // .env 파일 로드
@@ -36,6 +37,7 @@ app.get('/', (req, res) => {
 })
 
 app.use("/api/users", userRoutes)
+app.use("/api/products", productRoutes)
 
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   res.status(error.status || 500)

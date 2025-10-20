@@ -1,6 +1,8 @@
 import { DataSource } from 'typeorm'
 import dotenv from 'dotenv'
 import { User } from './entities/User'
+import { Product } from './entities/Product'
+import { Payment } from './entities/Payment'
 
 dotenv.config()
 
@@ -13,7 +15,7 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_DATABASE || 'ecommerce',
   synchronize: true, // 개발 환경에서만 사용, 프로덕션에서는 false
   logging: false,
-  entities: [User],
+  entities: [User, Product, Payment],
   migrations: [],
   subscribers: [],
 })

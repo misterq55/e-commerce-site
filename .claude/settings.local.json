@@ -6,7 +6,8 @@
       "Bash(npm --version)",
       "Bash(docker:*)",
       "Bash(docker-compose:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

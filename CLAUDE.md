@@ -86,13 +86,16 @@ npm start
 ```
 backend/src/
 ├── entities/
-│   └── User.ts               # User entity with auth & validation
+│   ├── User.ts               # User entity with auth & validation
+│   ├── Product.ts            # Product entity (title, description, price, images, etc.)
+│   └── Payment.ts            # Payment entity (user, products, data)
 ├── middlewares/
 │   ├── user.ts               # Optional auth (sets res.locals.user)
 │   └── auth.ts               # Required auth (401 if no user)
 ├── routes/
-│   └── user.ts               # /api/users routes
-├── data-source.ts            # TypeORM DataSource config
+│   ├── user.ts               # /api/users routes
+│   └── product.ts            # /api/products routes
+├── data-source.ts            # TypeORM DataSource config (entities: User, Product, Payment)
 └── index.ts                  # Express app entry point
 
 backend/
@@ -105,6 +108,7 @@ backend/
 - `POST /api/users/login` - Login (returns user, sets cookie)
 - `POST /api/users/logout` - Logout (clears cookie)
 - `GET /api/users/me` - Get current user (protected)
+- `POST /api/products/` - Create product (protected, requires auth)
 
 #### Important Configuration Notes
 - **Module System**: CommonJS (NOT ESM) - TypeORM's `emitDecoratorMetadata` requires CommonJS
@@ -157,6 +161,19 @@ export class User {
 
 Import entities in `data-source.ts` by adding them to the entities array.
 
+**Current Entities**:
+- `User`: Authentication, profile (id, email, password, name, role, image)
+- `Product`: E-commerce products (id, title, description, price, images[], sold, continents, views, writer, cart[], history[])
+- `Payment`: Payment records (id, user, data, products[], createdAt)
+
+**Creating Products**:
+```typescript
+// Use repository.create() instead of new Product()
+const productRepository = AppDataSource.getRepository(Product)
+const product = productRepository.create(req.body)
+await productRepository.save(product)
+```
+
 ### Frontend (React + Vite + TypeScript)
 
 - **Framework**: React 19 with TypeScript
@@ -176,17 +193,21 @@ frontend/src/
 │   └── axios.ts              # Axios instance with baseURL config
 ├── components/
 │   ├── common/
-│   │   └── Input.tsx         # Reusable input component (forwardRef)
+│   │   ├── Input.tsx         # Reusable input component (forwardRef)
+│   │   └── NavItem.tsx       # Navigation item with dropdown support & badge
 │   ├── layout/
 │   │   ├── AuthLayout.tsx    # Layout for login/register (no NavBar/Footer)
 │   │   ├── MainLayout.tsx    # Layout with NavBar & Footer
-│   │   ├── NavBar.tsx        # Navigation with login state
+│   │   ├── NavBar.tsx        # Navigation with dropdown menu & cart badge
 │   │   └── Footer.tsx
 │   └── ProtectedRoute.tsx    # Route guard for authenticated users
 ├── pages/
 │   ├── LandingPage.tsx       # Public home page
 │   ├── LoginPage.tsx         # Login form (react-hook-form)
-│   └── RegisterPage.tsx      # Registration form (react-hook-form)
+│   ├── RegisterPage.tsx      # Registration form (react-hook-form)
+│   ├── UploadProductPage.tsx # Product upload form (protected)
+│   ├── CartPage.tsx          # Shopping cart page
+│   └── HistoryPage.tsx       # Purchase history page
 ├── store/
 │   ├── store.ts              # Redux store + redux-persist config
 │   └── userSlice.ts          # User authentication slice
@@ -248,7 +269,14 @@ npm run preview
 **Routing**
 - Public routes: `/` (LandingPage)
 - Auth routes: `/login`, `/register` (AuthLayout)
-- Protected routes: Use `<ProtectedRoute>` wrapper
+- Protected routes: `/product/upload`, `/user/cart`, `/history` (requires authentication)
+  - Use `<ProtectedRoute>` wrapper
+
+**Navigation (NavBar)**
+- Dropdown menu support with hover/click interaction
+- Shopping cart icon with badge count
+- Icons from `react-icons` library
+- Responsive design (hidden on mobile: `hidden md:flex`)
 
 **API Configuration**
 - Axios instance in `src/api/axios.ts`
@@ -304,3 +332,30 @@ VITE_API_URL=http://localhost:3000
 ```
 
 Note: Vite requires `VITE_` prefix for env variables.
+
+## Additional Libraries
+
+**Frontend**:
+- `react-icons` - Icon library for UI components
+- `react-dropzone` - File drag & drop for image uploads
+- `react-image-gallery` - Image gallery/slider component
+- `react-responsive-carousel` - Responsive carousel component
+
+**Backend**:
+- `multer` - File upload middleware for Express
+
+## Database Management
+
+**View data with pgAdmin**:
+1. Connection info:
+   - Host: `localhost`, Port: `5432`
+   - Database: `ecommerce`
+   - Username: `admin`, Password: `admin123`
+2. Navigate: Servers → Databases → ecommerce → Schemas → public → Tables
+3. Right-click table → "View/Edit Data" → "All Rows"
+
+**View data with psql**:
+```bash
+docker exec -it ecommerce-postgres psql -U admin -d ecommerce
+SELECT * FROM product;
+```

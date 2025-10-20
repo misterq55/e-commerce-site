@@ -10,7 +10,11 @@ import MainLayout from './components/layout/MainLayout'
 import AuthLayout from './components/layout/AuthLayout'
 import { fetchCurrentUser } from './store/userSlice'
 import type { AppDispatch } from './store/store'
-// import ProtectedRoute from './components/ProtectedRoute'
+import ProtectedRoute from './components/ProtectedRoute'
+import UploadProductPage from './pages/UploadProductPage'
+import DetailProductPage from './pages/DetailProductPage'
+import CartPage from './pages/CartPage'
+import HistoryPage from './pages/HistoryPage'
 
 function App() {
   const dispatch = useDispatch<AppDispatch>()
@@ -36,9 +40,13 @@ function App() {
           </Route>
 
           {/* Protected routes 예시 */}
-          {/* <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-            <Route path="/dashboard" element={<Dashboard />} />
-          </Route> */}
+          <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+            {/* <Route path="/dashboard" element={<Dashboard />} /> */}
+            <Route path="/product/upload" element={<UploadProductPage />} />
+            <Route path="/product/:productId" element={<DetailProductPage />} />
+            <Route path="/user/cart" element={<CartPage />} />
+            <Route path="/history" element={<HistoryPage />} />
+          </Route>
         </Routes>
       </Router>
       <ToastContainer
