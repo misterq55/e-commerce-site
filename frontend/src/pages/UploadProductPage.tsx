@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import type { RootState } from '../store/store'
 import api from '../api/axios'
 import { useNavigate } from 'react-router-dom'
+import FileUpload from '../components/common/FileUpload'
 
 const continents = [
   { key: 1, value: 'Africa' },
@@ -33,12 +34,19 @@ const UploadProductPage = () => {
     }))
   }
 
+  const handleImages = (newImages: any) => {
+    setProduct(prevState => ({
+      ...prevState,
+      images: newImages
+    }))
+  }
+
   const handleSubmit = async (event: any) => {
     event.preventDefault();
 
     const body = {
       writer: userData.user?.id,
-      ...product 
+      ...product
     }
 
     try {
@@ -56,6 +64,7 @@ const UploadProductPage = () => {
       </div>
 
       <form className='space-y-6' onSubmit={handleSubmit}>
+        <FileUpload images={product.images} onImageChange={handleImages}/>
         <div className='mt-4'>
           <label htmlFor='title'>이름</label>
           <input

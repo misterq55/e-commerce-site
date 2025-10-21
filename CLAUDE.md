@@ -104,11 +104,15 @@ backend/
 ```
 
 **API Endpoints**
-- `POST /api/users/register` - Register new user
-- `POST /api/users/login` - Login (returns user, sets cookie)
-- `POST /api/users/logout` - Logout (clears cookie)
-- `GET /api/users/me` - Get current user (protected)
-- `POST /api/products/` - Create product (protected, requires auth)
+- **User Routes** (`/api/users`):
+  - `POST /api/users/register` - Register new user
+  - `POST /api/users/login` - Login (returns user, sets cookie)
+  - `POST /api/users/logout` - Logout (clears cookie)
+  - `GET /api/users/me` - Get current user (protected)
+- **Product Routes** (`/api/products`):
+  - `GET /api/products` - Get products with pagination, filtering, and search
+  - `POST /api/products` - Create product (protected, requires auth)
+  - `POST /api/products/image` - Upload product image (protected, requires auth)
 
 #### Important Configuration Notes
 - **Module System**: CommonJS (NOT ESM) - TypeORM's `emitDecoratorMetadata` requires CommonJS
@@ -174,6 +178,30 @@ const product = productRepository.create(req.body)
 await productRepository.save(product)
 ```
 
+#### File Upload (Multer)
+- **Upload Directory**: `backend/uploads/` (auto-created if not exists)
+- **File Types**: Images only (jpeg, jpg, png, gif, webp)
+- **File Size Limit**: 5MB
+- **File Naming**: `${timestamp}_${originalname}`
+- **Static Files**: Served via `express.static` at `/`
+- **Access**: `http://localhost:3000/${filename}`
+
+**Image Upload Flow**:
+1. Frontend uploads file via `POST /api/products/image` with `multipart/form-data`
+2. Backend saves file to `uploads/` and returns filename
+3. Frontend stores filename in product images array
+4. Product creation includes array of filenames
+5. Display images using `${VITE_API_URL}/${filename}`
+
+#### Product Query Features
+- **Pagination**: `skip` and `limit` parameters
+- **Search**: Full-text search in title and description (`searchTerm`)
+- **Filters**:
+  - Continents filter (array of continent IDs)
+  - Price range filter (array of [min, max] ranges)
+- **Sorting**: Latest first (by ID DESC)
+- **Response**: `{ products: Product[], hasMore: boolean }`
+
 ### Frontend (React + Vite + TypeScript)
 
 - **Framework**: React 19 with TypeScript
@@ -194,10 +222,16 @@ frontend/src/
 ├── components/
 │   ├── common/
 │   │   ├── Input.tsx         # Reusable input component (forwardRef)
-│   │   └── NavItem.tsx       # Navigation item with dropdown support & badge
+│   │   ├── NavItem.tsx       # Navigation item with dropdown support & badge
+│   │   ├── FileUpload.tsx    # Image upload with drag & drop (react-dropzone)
+│   │   ├── ImageSlider.tsx   # Image carousel (react-responsive-carousel)
+│   │   ├── CardItem.tsx      # Product card for grid display
+│   │   ├── CheckBox.tsx      # Checkbox filter component
+│   │   ├── RadioBox.tsx      # Radio button filter component
+│   │   └── SearchInput.tsx   # Search input component
 │   ├── layout/
 │   │   ├── AuthLayout.tsx    # Layout for login/register (no NavBar/Footer)
-│   │   ├── MainLayout.tsx    # Layout with NavBar & Footer
+│   │   ├── MainLayout.tsx    # Layout with NavBar & Footer (responsive padding)
 │   │   ├── NavBar.tsx        # Navigation with dropdown menu & cart badge
 │   │   └── Footer.tsx
 │   └── ProtectedRoute.tsx    # Route guard for authenticated users
@@ -211,6 +245,8 @@ frontend/src/
 ├── store/
 │   ├── store.ts              # Redux store + redux-persist config
 │   └── userSlice.ts          # User authentication slice
+├── types/
+│   └── product.ts            # Product-related TypeScript interfaces
 ├── utils/
 │   └── validationRules.ts    # Form validation rules
 ├── App.tsx                   # Main app with routes
@@ -297,24 +333,19 @@ npm run preview
 - Dark NavBar, light backgrounds
 
 **TypeScript Type Management**
-- Current approach: Types defined inline in component files
+- **Centralized Types**: Shared types in `src/types/` directory
+  - `types/product.ts`: `Product`, `Filters`, `FetchProductsParams` interfaces
+  - Used across multiple components (CardItem, LandingPage, etc.)
+- **Component-specific Types**: Inline in component files
   - `userSlice.ts`: `User`, `UserState` interfaces
   - `LoginPage.tsx`: `LoginForm` interface
   - `RegisterPage.tsx`: `RegisterForm` interface
-- This is appropriate for the current project size
-- Consider refactoring to domain-based structure when:
-  - Types are reused across multiple files
-  - New domains are added (products, orders, etc.)
-  - Files become too large or complex
-- Recommended future structure:
-  ```
-  frontend/src/
-  ├── features/
-  │   └── auth/
-  │       └── types.ts      # User, LoginFormData, RegisterFormData
-  └── types/
-      └── common.ts         # ApiResponse, LoadingState (global types)
-  ```
+- **Type-only Imports**: Use `import type` syntax for better tree-shaking
+  - Example: `import type { Product } from '../types/product'`
+  - Required by `verbatimModuleSyntax` TypeScript setting
+- **React Import**: NOT needed in React 19 (automatic JSX transform)
+  - Remove `import React from 'react'` from all files
+  - Only import hooks: `import { useState, useEffect } from 'react'`
 
 #### Adding New Pages
 
