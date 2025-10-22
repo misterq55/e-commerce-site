@@ -1,8 +1,38 @@
+interface Continent {
+  _id: number
+  name: string
+}
 
-const CheckBox = () => {
+interface CheckBoxProps {
+  continents: Continent[]
+  checkedContinents: number[]
+  onFilters: (checked: number[]) => void
+}
+
+const CheckBox = ({continents, checkedContinents, onFilters}: CheckBoxProps) => {
+  const handleToggle = (continentId: number) => {
+    const currentIndex = checkedContinents.indexOf(continentId)
+
+    const newChecked = [...checkedContinents]
+    if (currentIndex === -1) {
+      newChecked.push(continentId)
+    } else {
+      newChecked.splice(currentIndex, 1)
+    }
+    onFilters(newChecked)
+  }
   return (
-    <div>
-      CheckBox
+    <div className="p-2 mb-3 bg-gray-100 rounded-md">
+      {continents?.map(continent => (
+        <div key={continent._id}>
+          <input
+            type='checkbox'
+            checked={checkedContinents.includes(continent._id)}
+            onChange={() => handleToggle(continent._id)}
+          />{" "}
+          <label>{continent.name}</label>
+        </div>
+      ))}
     </div>
   )
 }

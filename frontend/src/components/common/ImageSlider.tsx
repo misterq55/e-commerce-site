@@ -1,4 +1,5 @@
 import { Carousel } from 'react-responsive-carousel'
+import 'react-responsive-carousel/lib/styles/carousel.min.css'
 
 interface ImageSliderProps {
       images: string[];
@@ -14,7 +15,6 @@ const ImageSlider = ({ images }: ImageSliderProps) => {
                         alt={image}
                         className='w-full max-h-[150px]'
                     />
-                    <p className='legend'>Legend 1</p>
                 </div>
             ))}
         </Carousel>

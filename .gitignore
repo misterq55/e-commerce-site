@@ -8,3 +8,4 @@ build/
 .idea/
 *.swp
 *.swo
+backend/uploads/

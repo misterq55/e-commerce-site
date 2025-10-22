@@ -179,12 +179,13 @@ await productRepository.save(product)
 ```
 
 #### File Upload (Multer)
-- **Upload Directory**: `backend/uploads/` (auto-created if not exists)
+- **Upload Directory**: `backend/uploads/` (auto-created if not exists, excluded from git)
 - **File Types**: Images only (jpeg, jpg, png, gif, webp)
 - **File Size Limit**: 5MB
 - **File Naming**: `${timestamp}_${originalname}`
 - **Static Files**: Served via `express.static` at `/`
 - **Access**: `http://localhost:3000/${filename}`
+- **Git Ignore**: `backend/uploads/` is added to `.gitignore` to prevent uploaded files from being tracked
 
 **Image Upload Flow**:
 1. Frontend uploads file via `POST /api/products/image` with `multipart/form-data`
@@ -199,8 +200,21 @@ await productRepository.save(product)
 - **Filters**:
   - Continents filter (array of continent IDs)
   - Price range filter (array of [min, max] ranges)
+  - **IMPORTANT**: Backend expects `filters` as a JSON string, not an object
+  - Frontend must send: `filters: JSON.stringify({ continents: [1, 2], price: [] })`
 - **Sorting**: Latest first (by ID DESC)
 - **Response**: `{ products: Product[], hasMore: boolean }`
+
+**Example API Call from Frontend**:
+```typescript
+const params = {
+  skip: 0,
+  limit: 4,
+  filters: JSON.stringify({ continents: [1, 2], price: [] }), // Must stringify!
+  searchTerm: 'search term'
+}
+const response = await api.get('/api/products', { params })
+```
 
 ### Frontend (React + Vite + TypeScript)
 
@@ -224,10 +238,10 @@ frontend/src/
 │   │   ├── Input.tsx         # Reusable input component (forwardRef)
 │   │   ├── NavItem.tsx       # Navigation item with dropdown support & badge
 │   │   ├── FileUpload.tsx    # Image upload with drag & drop (react-dropzone)
-│   │   ├── ImageSlider.tsx   # Image carousel (react-responsive-carousel)
-│   │   ├── CardItem.tsx      # Product card for grid display
-│   │   ├── CheckBox.tsx      # Checkbox filter component
-│   │   ├── RadioBox.tsx      # Radio button filter component
+│   │   ├── ImageSlider.tsx   # Image carousel (react-responsive-carousel + CSS)
+│   │   ├── CardItem.tsx      # Product card for grid display with ImageSlider
+│   │   ├── CheckBox.tsx      # Checkbox filter component (continent filtering)
+│   │   ├── RadioBox.tsx      # Radio button filter component (price filtering)
 │   │   └── SearchInput.tsx   # Search input component
 │   ├── layout/
 │   │   ├── AuthLayout.tsx    # Layout for login/register (no NavBar/Footer)
@@ -248,7 +262,8 @@ frontend/src/
 ├── types/
 │   └── product.ts            # Product-related TypeScript interfaces
 ├── utils/
-│   └── validationRules.ts    # Form validation rules
+│   ├── validationRules.ts    # Form validation rules
+│   └── filterData.ts         # Filter options (continents, prices)
 ├── App.tsx                   # Main app with routes
 ├── main.tsx                  # Entry point with Redux Provider + PersistGate
 └── index.css                 # Tailwind directives
@@ -332,6 +347,19 @@ npm run preview
 - Responsive layouts with Flexbox
 - Dark NavBar, light backgrounds
 
+**Product Filtering & Search (LandingPage)**
+- **Continent Filter**: CheckBox component with multiple selection
+- **Price Filter**: RadioBox component with single selection
+- **Search**: SearchInput component for text search
+- **Filter State**: Managed in `filters` state object (`{ continents: number[], price: number[] }`)
+- **Filter Updates**:
+  - `handleFilters(newFilteredData, category)` updates filter state
+  - `showFilteredResults(filters)` fetches filtered products
+  - Always reset `skip` to 0 when filtering
+  - Use `keyof Filters` type for category parameter to ensure type safety
+- **Load More**: Appends new products to existing list (use functional setState: `setProducts(prev => [...prev, ...new])`)
+- **Important**: Always stringify filters when sending to API (`filters: JSON.stringify(filters)`)
+
 **TypeScript Type Management**
 - **Centralized Types**: Shared types in `src/types/` directory
   - `types/product.ts`: `Product`, `Filters`, `FetchProductsParams` interfaces
@@ -346,6 +374,50 @@ npm run preview
 - **React Import**: NOT needed in React 19 (automatic JSX transform)
   - Remove `import React from 'react'` from all files
   - Only import hooks: `import { useState, useEffect } from 'react'`
+
+#### Common Patterns & Best Practices
+
+**Filter Components**:
+```typescript
+// CheckBox.tsx - Multiple selection filter
+interface CheckBoxProps {
+  continents: { _id: number, name: string }[]
+  checkedContinents: number[]
+  onFilters: (checked: number[]) => void
+}
+
+// Always call onFilters with new array when toggling
+const handleToggle = (id: number) => {
+  const newChecked = [...checkedContinents]
+  // ... toggle logic
+  onFilters(newChecked)  // Must call this!
+}
+
+// Use checked attribute for controlled component
+<input
+  type="checkbox"
+  checked={checkedContinents.includes(id)}
+  onChange={() => handleToggle(id)}
+/>
+```
+
+**State Updates with Dependencies**:
+```typescript
+// ❌ Wrong - uses stale state
+setProducts([...products, ...newProducts])
+
+// ✅ Correct - uses functional update
+setProducts(prev => [...prev, ...newProducts])
+```
+
+**API Filters**:
+```typescript
+// ❌ Wrong - sends object
+const params = { filters: { continents: [1] } }
+
+// ✅ Correct - sends JSON string
+const params = { filters: JSON.stringify({ continents: [1] }) }
+```
 
 #### Adding New Pages
 
@@ -369,8 +441,7 @@ Note: Vite requires `VITE_` prefix for env variables.
 **Frontend**:
 - `react-icons` - Icon library for UI components
 - `react-dropzone` - File drag & drop for image uploads
-- `react-image-gallery` - Image gallery/slider component
-- `react-responsive-carousel` - Responsive carousel component
+- `react-responsive-carousel` - Responsive carousel component (requires CSS import: `import 'react-responsive-carousel/lib/styles/carousel.min.css'`)
 
 **Backend**:
 - `multer` - File upload middleware for Express

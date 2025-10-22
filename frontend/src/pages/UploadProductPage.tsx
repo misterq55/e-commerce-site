@@ -80,8 +80,9 @@ const UploadProductPage = () => {
         <div className='mt-4'>
           <label htmlFor='price'>가격</label>
           <input
+            type='number'
             className='w-full px-4 py-2 bg-white border rounded-md'
-            name='number' id='price' onChange={handleChange} value={product.price} />
+            name='price' id='price' onChange={handleChange} value={product.price} />
         </div>
         <div className='mt-4'>
           <label htmlFor='continents'>지역</label>

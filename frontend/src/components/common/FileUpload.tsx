@@ -51,7 +51,6 @@ const FileUpload = ({ onImageChange, images }: FileUploadProps) => {
         {images.map((image) => (
           <div key={image} onClick={() => handleDelete(image)}>
             <img
-              key={image}
               src={`${import.meta.env.VITE_API_URL}/${image}`}
               alt={image}
               className='max-h-full object-contain'
