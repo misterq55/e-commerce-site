@@ -5,7 +5,7 @@ import RadioBox from "../components/common/RadioBox"
 import SearchInput from "../components/common/SearchInput"
 import api from "../api/axios";
 import type { Product, Filters, FetchProductsParams } from "../types/product";
-import { continents } from "../utils/filterData";
+import { continents, prices } from "../utils/filterData";
 
 function LandingPage() {
   const limit = 4;
@@ -14,7 +14,7 @@ function LandingPage() {
   const [hasMore, setHasMore] = useState(false)
   const [filters, setFilters] = useState<Filters>({
     continents: [],
-    price: []
+    prices: []
   })
 
   useEffect(() => {
@@ -56,6 +56,7 @@ function LandingPage() {
 
   const handleFilters = (newFilteredData: number[], category: keyof Filters) => {
     const newFilters = {...filters, [category]: newFilteredData}
+
     showFilteredResults(newFilters)
     setFilters(newFilters)
   }
@@ -85,7 +86,9 @@ function LandingPage() {
         </div>
 
         <div className="w-1/2">
-          <RadioBox />
+          <RadioBox prices={prices} checkedPrice={filters.prices}
+            onFilters={filters=>handleFilters(filters, "prices")}
+          />
         </div>
       </div>
 

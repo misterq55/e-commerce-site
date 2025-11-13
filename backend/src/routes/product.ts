@@ -82,20 +82,12 @@ const getProducts = async (req: Request, res: Response, next: NextFunction) => {
             }
 
             // Price 필터 (예: [0, 100], [100, 200])
-            if (parsedFilters.price && parsedFilters.price.length > 0) {
-                const priceRanges = parsedFilters.price
-                const priceConditions = priceRanges.map((range: number[], index: number) => {
-                    return `(product.price >= :min${index} AND product.price <= :max${index})`
-                }).join(' OR ')
-
-                if (priceConditions) {
-                    const priceParams: any = {}
-                    priceRanges.forEach((range: number[], index: number) => {
-                        priceParams[`min${index}`] = range[0]
-                        priceParams[`max${index}`] = range[1]
-                    })
-                    query = query.andWhere(`(${priceConditions})`, priceParams)
-                }
+            if (parsedFilters.prices && parsedFilters.prices.length > 0) {
+                const [minPrice, maxPrice] = parsedFilters.prices
+                query = query.andWhere('product.price >= :minPrice AND product.price <= :maxPrice', {
+                    minPrice,
+                    maxPrice
+                })
             }
         }
 

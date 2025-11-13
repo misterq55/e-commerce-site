@@ -199,9 +199,10 @@ await productRepository.save(product)
 - **Search**: Full-text search in title and description (`searchTerm`)
 - **Filters**:
   - Continents filter (array of continent IDs)
-  - Price range filter (array of [min, max] ranges)
+  - Price range filter (single array of [min, max])
   - **IMPORTANT**: Backend expects `filters` as a JSON string, not an object
-  - Frontend must send: `filters: JSON.stringify({ continents: [1, 2], price: [] })`
+  - Frontend must send: `filters: JSON.stringify({ continents: [1, 2], prices: [200, 249] })`
+  - Note: `prices` is a single price range array (e.g., `[200, 249]`), not an array of ranges
 - **Sorting**: Latest first (by ID DESC)
 - **Response**: `{ products: Product[], hasMore: boolean }`
 
@@ -210,7 +211,7 @@ await productRepository.save(product)
 const params = {
   skip: 0,
   limit: 4,
-  filters: JSON.stringify({ continents: [1, 2], price: [] }), // Must stringify!
+  filters: JSON.stringify({ continents: [1, 2], prices: [200, 249] }), // Must stringify!
   searchTerm: 'search term'
 }
 const response = await api.get('/api/products', { params })
@@ -351,7 +352,7 @@ npm run preview
 - **Continent Filter**: CheckBox component with multiple selection
 - **Price Filter**: RadioBox component with single selection
 - **Search**: SearchInput component for text search
-- **Filter State**: Managed in `filters` state object (`{ continents: number[], price: number[] }`)
+- **Filter State**: Managed in `filters` state object (`{ continents: number[], prices: number[] }`)
 - **Filter Updates**:
   - `handleFilters(newFilteredData, category)` updates filter state
   - `showFilteredResults(filters)` fetches filtered products

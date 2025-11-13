@@ -11,7 +11,7 @@ export interface Product {
 
 export interface Filters {
   continents: number[];
-  price: number[];
+  prices: number[];
 }
 
 export interface FetchProductsParams {
