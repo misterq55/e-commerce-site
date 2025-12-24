@@ -351,12 +351,16 @@ npm run preview
 **Product Filtering & Search (LandingPage)**
 - **Continent Filter**: CheckBox component with multiple selection
 - **Price Filter**: RadioBox component with single selection
-- **Search**: SearchInput component for text search
+- **Search**: SearchInput component for real-time text search
+  - Controlled component with `searchTerm` state and `onSearch` callback
+  - Triggers immediate product fetch on every keystroke
+  - Resets `skip` to 0 on search to show fresh results
 - **Filter State**: Managed in `filters` state object (`{ continents: number[], prices: number[] }`)
 - **Filter Updates**:
   - `handleFilters(newFilteredData, category)` updates filter state
   - `showFilteredResults(filters)` fetches filtered products
-  - Always reset `skip` to 0 when filtering
+  - `handleSearchTerm(event)` updates search term and fetches results
+  - Always reset `skip` to 0 when filtering or searching
   - Use `keyof Filters` type for category parameter to ensure type safety
 - **Load More**: Appends new products to existing list (use functional setState: `setProducts(prev => [...prev, ...new])`)
 - **Important**: Always stringify filters when sending to API (`filters: JSON.stringify(filters)`)
@@ -409,6 +413,32 @@ setProducts([...products, ...newProducts])
 
 // ✅ Correct - uses functional update
 setProducts(prev => [...prev, ...newProducts])
+```
+
+**Search Component (SearchInput)**:
+```typescript
+// SearchInput.tsx - Controlled input component
+interface SearchInputProps {
+  searchTerm?: string
+  onSearch: (event: any) => void
+}
+
+// Usage in parent component (LandingPage)
+const [searchTerm, setSearchTerm] = useState('')
+
+const handleSearchTerm = (event: any) => {
+  const body = {
+    skip: 0,
+    limit,
+    filters,
+    searchTerm: event.target.value
+  }
+  setSkip(0)
+  setSearchTerm(event.target.value)
+  fetchProducts(body)  // Immediate fetch on every keystroke
+}
+
+<SearchInput searchTerm={searchTerm} onSearch={handleSearchTerm} />
 ```
 
 **API Filters**:
