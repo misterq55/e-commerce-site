@@ -1,16 +1,28 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code when working with this e-commerce project.
 
 **Language Preference**: Communicate with the user in Korean.
 
-## Project Structure
+---
 
-This is a e commerce site project with a basic Express server setup:
+## 📂 Documentation Structure
 
-- `backend/` - Express.js + TypeORM backend (port 3000)
-- `frontend/` - React + Vite + Redux frontend (port 5173)
-- `docker-compose.yml` - PostgreSQL 16 database
+- **[Backend Documentation](./docs/backend.md)** - Express.js, TypeORM, Auth, File Upload, Cart
+- **[Frontend Documentation](./docs/frontend.md)** - React, Redux, TypeScript, Components
+- **[API Documentation](./docs/api.md)** - Complete API reference with examples
+
+---
+
+## Project Overview
+
+E-commerce site with full-stack TypeScript:
+
+- **Backend**: Express.js + TypeORM + PostgreSQL (port 3000)
+- **Frontend**: React 19 + Vite + Redux (port 5173)
+- **Database**: PostgreSQL 16 (Docker)
+
+---
 
 ## Quick Start
 
@@ -18,477 +30,297 @@ This is a e commerce site project with a basic Express server setup:
 # 1. Start database
 docker-compose up -d
 
-# 2. Start backend (Terminal 1)
-cd backend && npm install && npm run dev
-
-# 3. Start frontend (Terminal 2)
-cd frontend && npm install && npm run dev
-
-# Or use concurrently (from root)
+# 2. Start both servers (from root)
 npm install
 npm run dev
+
+# Or start separately:
+# Backend: cd backend && npm run dev
+# Frontend: cd frontend && npm run dev
 ```
 
-Visit: http://localhost:5173
+Visit: **http://localhost:5173**
 
-## Commands
+---
 
-### Root (Concurrently)
+## Key Technologies
 
-```bash
-# Run both backend and frontend
-npm run dev
-```
-
-### Database (Docker)
-
-```bash
-# Start PostgreSQL container
-docker-compose up -d
-
-# Stop PostgreSQL container
-docker-compose down
-
-# View logs
-docker-compose logs -f postgres
-```
-
-### Backend Development
-
-All backend commands should be run from the `backend/` directory:
-
-```bash
-# Install dependencies
-cd backend && npm install
-
-# Start development server (with hot reload)
-npm run dev
-
-# Build for production
-npm run build
-
-# Start production server
-npm start
-```
-
-## Architecture Notes
-
-### Backend (Express.js + TypeORM)
-
-- **Entry point**: `backend/src/index.ts`
-- **Runtime**: TypeScript with `ts-node` (CommonJS module system)
-- **Database**: PostgreSQL 16 (via Docker)
+### Backend
+- **Framework**: Express.js with TypeScript (CommonJS)
 - **ORM**: TypeORM with reflect-metadata
-- **Validation**: class-validator, class-transformer
-- **Port**: 3000
+- **Database**: PostgreSQL 16
+- **Auth**: JWT in HttpOnly cookies
+- **Validation**: class-validator
+- **File Upload**: Multer (images to `backend/uploads/`)
 
-#### File Structure
+### Frontend
+- **Framework**: React 19 with TypeScript
+- **Build**: Vite 7
+- **Styling**: Tailwind CSS v4
+- **State**: Redux Toolkit + redux-persist
+- **Forms**: react-hook-form
+- **Routing**: React Router v7
+- **API**: Axios with credentials
+- **Notifications**: react-toastify
+
+---
+
+## Important Conventions
+
+### Backend
+- **Module System**: CommonJS (NOT ESM) - required by TypeORM decorators
+- **Runtime**: Use `ts-node` (NOT `tsx`)
+- **Entity Properties**: Must use `!` assertion (e.g., `id!: number`)
+- **Creating Products**: Use `repository.create()` not `new Product()`
+- **Cookies**: HttpOnly, SameSite=strict, secure in production
+
+### Frontend
+- **React 19**: NO `import React from 'react'` needed
+- **Type Imports**: Use `import type { ... }` for better tree-shaking
+- **Null Safety**: Early return pattern for type narrowing
+- **State Updates**: Use functional updates `setState(prev => ...)` in callbacks
+- **Filters**: Always stringify when sending to API: `JSON.stringify(filters)`
+
+---
+
+## API Endpoints
+
+### User Routes (`/api/users`)
+- `POST /register` - Register new user
+- `POST /login` - Login (sets HttpOnly cookie)
+- `POST /logout` - Logout (clears cookie)
+- `GET /me` - Get current user (protected)
+- `POST /cart` - Add to cart (protected)
+
+### Product Routes (`/api/products`)
+- `GET /` - List products (pagination, filters, search)
+- `POST /` - Create product (protected)
+- `POST /image` - Upload image (protected)
+- `GET /:id` - Get product(s) by ID
+
+---
+
+## File Structure
+
+### Backend (`backend/src/`)
 ```
-backend/src/
-├── entities/
-│   ├── User.ts               # User entity with auth & validation
-│   ├── Product.ts            # Product entity (title, description, price, images, etc.)
-│   └── Payment.ts            # Payment entity (user, products, data)
-├── middlewares/
-│   ├── user.ts               # Optional auth (sets res.locals.user)
-│   └── auth.ts               # Required auth (401 if no user)
-├── routes/
-│   ├── user.ts               # /api/users routes
-│   └── product.ts            # /api/products routes
-├── data-source.ts            # TypeORM DataSource config (entities: User, Product, Payment)
-└── index.ts                  # Express app entry point
-
-backend/
-├── .env                      # JWT_SECRET, CLIENT_URL, DB credentials
-└── tsconfig.json             # CommonJS config
+entities/
+  User.ts        # id, email, password, name, cart: CartItem[]
+  Product.ts     # title, description, price, images[]
+  Payment.ts     # user, products, data
+middlewares/
+  user.ts        # Optional auth (sets res.locals.user)
+  auth.ts        # Required auth (401 if no user)
+routes/
+  user.ts        # /api/users routes
+  product.ts     # /api/products routes
+data-source.ts   # TypeORM config
+index.ts         # Express app
 ```
 
-**API Endpoints**
-- **User Routes** (`/api/users`):
-  - `POST /api/users/register` - Register new user
-  - `POST /api/users/login` - Login (returns user, sets cookie)
-  - `POST /api/users/logout` - Logout (clears cookie)
-  - `GET /api/users/me` - Get current user (protected)
-- **Product Routes** (`/api/products`):
-  - `GET /api/products` - Get products with pagination, filtering, and search
-  - `POST /api/products` - Create product (protected, requires auth)
-  - `POST /api/products/image` - Upload product image (protected, requires auth)
+### Frontend (`frontend/src/`)
+```
+components/
+  common/        # Input, FileUpload, ProductImage, ProductInfo, etc.
+  layout/        # MainLayout, AuthLayout, NavBar, Footer
+  ProtectedRoute.tsx
+pages/
+  LandingPage.tsx         # Product list with filters
+  DetailProductPage.tsx   # Product detail
+  LoginPage.tsx
+  RegisterPage.tsx
+  UploadProductPage.tsx
+  CartPage.tsx
+store/
+  userSlice.ts   # Auth + cart state
+types/
+  product.ts     # Shared types
+```
 
-#### Important Configuration Notes
-- **Module System**: CommonJS (NOT ESM) - TypeORM's `emitDecoratorMetadata` requires CommonJS
-- **Runtime**: Use `ts-node` (NOT `tsx`) for proper decorator metadata support
-- **tsconfig.json** must have:
-  - `"module": "commonjs"`
-  - `"experimentalDecorators": true`
-  - `"emitDecoratorMetadata": true`
-  - `"esModuleInterop": true`
-- **package.json**: Do NOT include `"type": "module"`
+---
 
-#### Database Configuration
-- TypeORM is configured with `synchronize: true` for development (auto-creates tables from entities)
-- In production, set `synchronize: false` and use migrations instead
-- Connection credentials are in `.env` file
+## Data Models
 
-#### Authentication & Security
-- **JWT Storage**: HttpOnly cookies (OWASP recommended approach)
-- **Token Expiration**: 1 hour (`maxAge: 60 * 60 * 1000`)
-- **Cookie Security Flags**:
-  - `httpOnly: true` - Prevents XSS attacks (JavaScript cannot access)
-  - `secure: true` - HTTPS only (in production)
-  - `sameSite: 'strict'` - CSRF protection
-- **Password Hashing**: bcrypt with automatic salting
-- **CORS**: Configured with `credentials: true` for cookie support
-- **Why HttpOnly Cookies vs localStorage**:
-  - ✅ XSS attack protection (token not accessible via JavaScript)
-  - ✅ Automatic cookie transmission with `withCredentials: true`
-  - ✅ Browser handles token management
-  - ⚠️ Requires CSRF protection (handled by SameSite flag)
-
-#### Creating Entities
-All entity properties must use the definite assignment assertion (`!`) to satisfy TypeScript strict mode:
-
+### User Entity
 ```typescript
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm'
+interface CartItem {
+  productId: number
+  quantity: number
+}
 
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn()
   id!: number
-
-  @Column()
-  name!: string
-
-  @Column({ unique: true })
   email!: string
+  password!: string  // bcrypt hashed
+  name!: string
+  role!: number
+  image?: string
+  cart!: CartItem[]  // stored as JSON
 }
 ```
 
-Import entities in `data-source.ts` by adding them to the entities array.
-
-**Current Entities**:
-- `User`: Authentication, profile (id, email, password, name, role, image)
-- `Product`: E-commerce products (id, title, description, price, images[], sold, continents, views, writer, cart[], history[])
-- `Payment`: Payment records (id, user, data, products[], createdAt)
-
-**Creating Products**:
+### Product Entity
 ```typescript
-// Use repository.create() instead of new Product()
-const productRepository = AppDataSource.getRepository(Product)
-const product = productRepository.create(req.body)
-await productRepository.save(product)
-```
-
-#### File Upload (Multer)
-- **Upload Directory**: `backend/uploads/` (auto-created if not exists, excluded from git)
-- **File Types**: Images only (jpeg, jpg, png, gif, webp)
-- **File Size Limit**: 5MB
-- **File Naming**: `${timestamp}_${originalname}`
-- **Static Files**: Served via `express.static` at `/`
-- **Access**: `http://localhost:3000/${filename}`
-- **Git Ignore**: `backend/uploads/` is added to `.gitignore` to prevent uploaded files from being tracked
-
-**Image Upload Flow**:
-1. Frontend uploads file via `POST /api/products/image` with `multipart/form-data`
-2. Backend saves file to `uploads/` and returns filename
-3. Frontend stores filename in product images array
-4. Product creation includes array of filenames
-5. Display images using `${VITE_API_URL}/${filename}`
-
-#### Product Query Features
-- **Pagination**: `skip` and `limit` parameters
-- **Search**: Full-text search in title and description (`searchTerm`)
-- **Filters**:
-  - Continents filter (array of continent IDs)
-  - Price range filter (single array of [min, max])
-  - **IMPORTANT**: Backend expects `filters` as a JSON string, not an object
-  - Frontend must send: `filters: JSON.stringify({ continents: [1, 2], prices: [200, 249] })`
-  - Note: `prices` is a single price range array (e.g., `[200, 249]`), not an array of ranges
-- **Sorting**: Latest first (by ID DESC)
-- **Response**: `{ products: Product[], hasMore: boolean }`
-
-**Example API Call from Frontend**:
-```typescript
-const params = {
-  skip: 0,
-  limit: 4,
-  filters: JSON.stringify({ continents: [1, 2], prices: [200, 249] }), // Must stringify!
-  searchTerm: 'search term'
+@Entity()
+export class Product {
+  id!: number
+  title!: string
+  description!: string
+  price!: number
+  images!: string[]
+  sold!: number
+  continents!: number
+  views!: number
+  writer!: number
 }
-const response = await api.get('/api/products', { params })
 ```
 
-### Frontend (React + Vite + TypeScript)
+---
 
-- **Framework**: React 19 with TypeScript
-- **Build Tool**: Vite 7
-- **Styling**: Tailwind CSS v4
-- **State Management**: Redux Toolkit + redux-persist
-- **Form Management**: react-hook-form
-- **Routing**: React Router v7
-- **API Client**: Axios with custom instance
-- **Notifications**: react-toastify v11
-- **Port**: 5173 (dev server)
+## Cart System
 
-#### File Structure
-```
-frontend/src/
-├── api/
-│   └── axios.ts              # Axios instance with baseURL config
-├── components/
-│   ├── common/
-│   │   ├── Input.tsx         # Reusable input component (forwardRef)
-│   │   ├── NavItem.tsx       # Navigation item with dropdown support & badge
-│   │   ├── FileUpload.tsx    # Image upload with drag & drop (react-dropzone)
-│   │   ├── ImageSlider.tsx   # Image carousel (react-responsive-carousel + CSS)
-│   │   ├── CardItem.tsx      # Product card for grid display with ImageSlider
-│   │   ├── CheckBox.tsx      # Checkbox filter component (continent filtering)
-│   │   ├── RadioBox.tsx      # Radio button filter component (price filtering)
-│   │   └── SearchInput.tsx   # Search input component
-│   ├── layout/
-│   │   ├── AuthLayout.tsx    # Layout for login/register (no NavBar/Footer)
-│   │   ├── MainLayout.tsx    # Layout with NavBar & Footer (responsive padding)
-│   │   ├── NavBar.tsx        # Navigation with dropdown menu & cart badge
-│   │   └── Footer.tsx
-│   └── ProtectedRoute.tsx    # Route guard for authenticated users
-├── pages/
-│   ├── LandingPage.tsx       # Public home page
-│   ├── LoginPage.tsx         # Login form (react-hook-form)
-│   ├── RegisterPage.tsx      # Registration form (react-hook-form)
-│   ├── UploadProductPage.tsx # Product upload form (protected)
-│   ├── CartPage.tsx          # Shopping cart page
-│   └── HistoryPage.tsx       # Purchase history page
-├── store/
-│   ├── store.ts              # Redux store + redux-persist config
-│   └── userSlice.ts          # User authentication slice
-├── types/
-│   └── product.ts            # Product-related TypeScript interfaces
-├── utils/
-│   ├── validationRules.ts    # Form validation rules
-│   └── filterData.ts         # Filter options (continents, prices)
-├── App.tsx                   # Main app with routes
-├── main.tsx                  # Entry point with Redux Provider + PersistGate
-└── index.css                 # Tailwind directives
+### Add to Cart Flow
+1. Frontend: `dispatch(addToCart({ productId: 1 }))`
+2. Redux: `POST /api/users/cart { productId: 1 }`
+3. Backend: Check if product exists in user.cart
+   - If exists: `quantity += 1`
+   - If not: `cart.push({ productId, quantity: 1 })`
+4. Save to database (JSON format)
+5. Toast notification
 
-frontend/
-├── .env                      # VITE_API_URL=http://localhost:3000
-├── tailwind.config.js        # Tailwind v4 config
-└── postcss.config.js         # PostCSS with @tailwindcss/postcss
-```
-
-#### Commands
-
-```bash
-# Install dependencies
-cd frontend && npm install
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-```
-
-#### Key Features
-
-**Authentication Flow**
-- JWT stored in HttpOnly cookies (set by server, 1-hour expiration)
-- Redux manages user state globally
-- redux-persist keeps state across page refreshes (localStorage)
-- Auto-fetch user on app load (`fetchCurrentUser`)
-- Protected routes redirect to `/login` if not authenticated
-- Login/Register pages redirect to `/` if already authenticated
-- Toast notifications for auth events (success/error messages)
-
-**State Management (Redux Toolkit + redux-persist)**
-- `userSlice`: User authentication state
-  - `loginUser`: Login async thunk
-  - `registerUser`: Register async thunk
-  - `logoutUser`: Logout async thunk
-  - `fetchCurrentUser`: Get current user from cookie
-- TypeScript types: `RootState`, `AppDispatch`
-- Persisted to localStorage for seamless page refreshes
-
-**Form Management (react-hook-form)**
-- Used in LoginPage and RegisterPage
-- Automatic form validation with custom rules
-- Validation rules centralized in `utils/validationRules.ts`
-- Input component uses `forwardRef` for react-hook-form compatibility
-- Benefits: Less re-renders, cleaner code, built-in validation
-
-**Routing**
-- Public routes: `/` (LandingPage)
-- Auth routes: `/login`, `/register` (AuthLayout)
-- Protected routes: `/product/upload`, `/user/cart`, `/history` (requires authentication)
-  - Use `<ProtectedRoute>` wrapper
-
-**Navigation (NavBar)**
-- Dropdown menu support with hover/click interaction
-- Shopping cart icon with badge count
-- Icons from `react-icons` library
-- Responsive design (hidden on mobile: `hidden md:flex`)
-
-**API Configuration**
-- Axios instance in `src/api/axios.ts`
-- BaseURL from environment variable (`VITE_API_URL`)
-- `withCredentials: true` for automatic cookie transmission
-- No manual token management needed (HttpOnly cookies handle it)
-
-**User Notifications (react-toastify)**
-- Toast notifications for authentication events
-- Configured in `App.tsx` with `<ToastContainer>`
-- Used in `userSlice.ts` for success/error messages
-- Position: top-right, 3-second auto-close
-
-**Styling**
-- Tailwind CSS v4 with PostCSS
-- Custom Input component for forms
-- Responsive layouts with Flexbox
-- Dark NavBar, light backgrounds
-
-**Product Filtering & Search (LandingPage)**
-- **Continent Filter**: CheckBox component with multiple selection
-- **Price Filter**: RadioBox component with single selection
-- **Search**: SearchInput component for real-time text search
-  - Controlled component with `searchTerm` state and `onSearch` callback
-  - Triggers immediate product fetch on every keystroke
-  - Resets `skip` to 0 on search to show fresh results
-- **Filter State**: Managed in `filters` state object (`{ continents: number[], prices: number[] }`)
-- **Filter Updates**:
-  - `handleFilters(newFilteredData, category)` updates filter state
-  - `showFilteredResults(filters)` fetches filtered products
-  - `handleSearchTerm(event)` updates search term and fetches results
-  - Always reset `skip` to 0 when filtering or searching
-  - Use `keyof Filters` type for category parameter to ensure type safety
-- **Load More**: Appends new products to existing list (use functional setState: `setProducts(prev => [...prev, ...new])`)
-- **Important**: Always stringify filters when sending to API (`filters: JSON.stringify(filters)`)
-
-**TypeScript Type Management**
-- **Centralized Types**: Shared types in `src/types/` directory
-  - `types/product.ts`: `Product`, `Filters`, `FetchProductsParams` interfaces
-  - Used across multiple components (CardItem, LandingPage, etc.)
-- **Component-specific Types**: Inline in component files
-  - `userSlice.ts`: `User`, `UserState` interfaces
-  - `LoginPage.tsx`: `LoginForm` interface
-  - `RegisterPage.tsx`: `RegisterForm` interface
-- **Type-only Imports**: Use `import type` syntax for better tree-shaking
-  - Example: `import type { Product } from '../types/product'`
-  - Required by `verbatimModuleSyntax` TypeScript setting
-- **React Import**: NOT needed in React 19 (automatic JSX transform)
-  - Remove `import React from 'react'` from all files
-  - Only import hooks: `import { useState, useEffect } from 'react'`
-
-#### Common Patterns & Best Practices
-
-**Filter Components**:
+### Data Structure
 ```typescript
-// CheckBox.tsx - Multiple selection filter
-interface CheckBoxProps {
-  continents: { _id: number, name: string }[]
-  checkedContinents: number[]
-  onFilters: (checked: number[]) => void
-}
-
-// Always call onFilters with new array when toggling
-const handleToggle = (id: number) => {
-  const newChecked = [...checkedContinents]
-  // ... toggle logic
-  onFilters(newChecked)  // Must call this!
-}
-
-// Use checked attribute for controlled component
-<input
-  type="checkbox"
-  checked={checkedContinents.includes(id)}
-  onChange={() => handleToggle(id)}
-/>
+// User.cart in DB: [{"productId":1,"quantity":2}]
+// TypeScript: CartItem[] = [{ productId: 1, quantity: 2 }]
 ```
 
-**State Updates with Dependencies**:
-```typescript
-// ❌ Wrong - uses stale state
-setProducts([...products, ...newProducts])
+---
 
-// ✅ Correct - uses functional update
-setProducts(prev => [...prev, ...newProducts])
+## Environment Variables
+
+### Backend (`.env`)
+```env
+JWT_SECRET=your-secret-key
+CLIENT_URL=http://localhost:5173
+POSTGRES_USER=ecommerce_user
+POSTGRES_PASSWORD=ecommerce_password
+POSTGRES_DB=ecommerce
 ```
 
-**Search Component (SearchInput)**:
-```typescript
-// SearchInput.tsx - Controlled input component
-interface SearchInputProps {
-  searchTerm?: string
-  onSearch: (event: any) => void
-}
-
-// Usage in parent component (LandingPage)
-const [searchTerm, setSearchTerm] = useState('')
-
-const handleSearchTerm = (event: any) => {
-  const body = {
-    skip: 0,
-    limit,
-    filters,
-    searchTerm: event.target.value
-  }
-  setSkip(0)
-  setSearchTerm(event.target.value)
-  fetchProducts(body)  // Immediate fetch on every keystroke
-}
-
-<SearchInput searchTerm={searchTerm} onSearch={handleSearchTerm} />
-```
-
-**API Filters**:
-```typescript
-// ❌ Wrong - sends object
-const params = { filters: { continents: [1] } }
-
-// ✅ Correct - sends JSON string
-const params = { filters: JSON.stringify({ continents: [1] }) }
-```
-
-#### Adding New Pages
-
-1. Create page component in `src/pages/`
-2. Add route to `App.tsx`:
-   - Public: Use `<MainLayout>`
-   - Protected: Use `<ProtectedRoute><MainLayout /></ProtectedRoute>`
-   - Auth: Use `<AuthLayout>`
-
-#### Environment Variables
-
-Create `.env` in frontend directory:
+### Frontend (`.env`)
 ```env
 VITE_API_URL=http://localhost:3000
 ```
 
-Note: Vite requires `VITE_` prefix for env variables.
+---
 
-## Additional Libraries
+## Common Patterns
 
-**Frontend**:
-- `react-icons` - Icon library for UI components
-- `react-dropzone` - File drag & drop for image uploads
-- `react-responsive-carousel` - Responsive carousel component (requires CSS import: `import 'react-responsive-carousel/lib/styles/carousel.min.css'`)
-
-**Backend**:
-- `multer` - File upload middleware for Express
-
-## Database Management
-
-**View data with pgAdmin**:
-1. Connection info:
-   - Host: `localhost`, Port: `5432`
-   - Database: `ecommerce`
-   - Username: `admin`, Password: `admin123`
-2. Navigate: Servers → Databases → ecommerce → Schemas → public → Tables
-3. Right-click table → "View/Edit Data" → "All Rows"
-
-**View data with psql**:
-```bash
-docker exec -it ecommerce-postgres psql -U admin -d ecommerce
-SELECT * FROM product;
+### Protected Routes
+```typescript
+<Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+  <Route path="/product/upload" element={<UploadProductPage />} />
+</Route>
 ```
+
+### Redux Async Thunk
+```typescript
+export const addToCart = createAsyncThunk(
+  'user/addToCart',
+  async (body: { productId: number }) => {
+    const response = await api.post('/api/users/cart', body)
+    return response.data
+  }
+)
+```
+
+### Type-safe Dispatch
+```typescript
+const dispatch = useDispatch<AppDispatch>()
+dispatch(addToCart({ productId: 1 }))
+```
+
+### Controlled Filter Components
+```typescript
+const handleFilters = (newData: number[], category: keyof Filters) => {
+  setFilters({ ...filters, [category]: newData })
+}
+```
+
+---
+
+## Best Practices
+
+### TypeScript
+- ✅ Use `import type` for types
+- ✅ Define interface for all component props
+- ✅ Use type narrowing (early returns)
+- ❌ Don't use `any` or non-null assertions (`!`)
+
+### React
+- ✅ Functional setState in callbacks: `setState(prev => ...)`
+- ✅ useEffect dependencies: include all used variables
+- ❌ Don't import React in React 19
+
+### Redux
+- ✅ Type dispatch with `AppDispatch`
+- ✅ Use createAsyncThunk for API calls
+- ✅ Add toast notifications in extraReducers
+
+### API
+- ✅ Always stringify filters: `JSON.stringify(filters)`
+- ✅ Use `withCredentials: true` for cookies
+- ❌ Don't manually handle JWT tokens
+
+---
+
+## Development Commands
+
+```bash
+# Database
+docker-compose up -d          # Start PostgreSQL
+docker-compose down           # Stop
+docker-compose logs postgres  # View logs
+
+# Backend
+cd backend
+npm install
+npm run dev    # Start with nodemon
+npm run build  # Compile TypeScript
+
+# Frontend
+cd frontend
+npm install
+npm run dev    # Start Vite dev server
+npm run build  # Build for production
+```
+
+---
+
+## Troubleshooting
+
+### TypeScript Errors
+- Backend: Check `"module": "commonjs"` in tsconfig.json
+- Frontend: Check `import type` syntax
+- Both: Run `npm install` to update type definitions
+
+### API 404 Errors
+- Check route paths match: `/api/users/cart` vs `/api/products/cart`
+- Verify middleware order: `userMiddleware, authMiddleware`
+
+### Auth Issues
+- Backend: Check JWT_SECRET in .env
+- Frontend: Verify `withCredentials: true` in axios
+- Both: Clear cookies and re-login
+
+### Filter Not Working
+- Frontend: Stringify filters before sending
+- Backend: Parse JSON string in query handler
+
+---
+
+For detailed information, see documentation in `docs/` folder:
+- [Backend Details](./docs/backend.md)
+- [Frontend Details](./docs/frontend.md)
+- [API Reference](./docs/api.md)

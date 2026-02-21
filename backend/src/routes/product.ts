@@ -3,7 +3,7 @@ import { Product } from "../entities/Product"
 import { AppDataSource } from '../data-source'
 import authMiddleware from '../middlewares/auth'
 import userMiddleware from '../middlewares/user'
-import multer from "multer"
+import multer, { FileFilterCallback } from "multer"
 import path from 'path'
 import fs from 'fs'
 
@@ -14,10 +14,10 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
+    destination: function (req: Request, file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) {
         cb(null, uploadDir)
     },
-    filename: function (req, file, cb) {
+    filename: function (req: Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) {
         cb(null, `${Date.now()}_${file.originalname}`)
     }
 })
@@ -25,7 +25,7 @@ const storage = multer.diskStorage({
 const upload = multer({
     storage: storage,
     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB 제한
-    fileFilter: (req, file, cb) => {
+    fileFilter: (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
         const allowedTypes = /jpeg|jpg|png|gif|webp/
         const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase())
         const mimetype = allowedTypes.test(file.mimetype)
@@ -39,7 +39,7 @@ const upload = multer({
 }).single('file')
 
 const uploadImage = (req: Request, res: Response, next: NextFunction) => {
-    upload(req, res, err => {
+    upload(req, res, (err: any) => {
         if (err) {
             return res.status(500).json({ message: err.message })
         }
@@ -128,9 +128,45 @@ const createProduct = async (req: Request, res: Response, next: NextFunction) =>
     }
 }
 
+const findProducts = async (req: Request, res: Response, next: NextFunction) => {
+    const type = req.query.type;
+    const productId = req.params.id;
+
+    if (!productId) {
+        return res.status(400).json({ message: '상품 ID가 필요합니다.' })
+    }
+
+    try {
+        const productRepository = AppDataSource.getRepository(Product)
+        let products = []
+
+        if (type === 'single') {
+            // 단일 상품 조회
+            const product = await productRepository.findOne({
+                where: { id: Number(productId) }
+            })
+
+            if (!product) {
+                return res.status(404).json({ message: '상품을 찾을 수 없습니다.' })
+            }
+
+            products = [product]
+        } else {
+            // 여러 상품 조회 (쉼표로 구분된 ID들)
+            const ids = productId.split(',').map(id => Number(id.trim()))
+            products = await productRepository.findByIds(ids)
+        }
+
+        return res.status(200).json(products)
+    } catch (error) {
+        next(error)
+    }
+}
+
 const router = Router()
 router.get('/', getProducts)
 router.post('/', userMiddleware, authMiddleware, createProduct)
 router.post('/image', userMiddleware, authMiddleware, uploadImage)
+router.get('/:id', findProducts)
 
 export default router;

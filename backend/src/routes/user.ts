@@ -1,4 +1,4 @@
-import { Request, Response, Router } from "express";
+import { Request, Response, NextFunction, Router } from "express";
 import { isEmpty, validate } from 'class-validator'
 import { AppDataSource } from '../data-source'
 import { User } from "../entities/User";
@@ -113,10 +113,67 @@ const logout = async (req: Request, res: Response) => {
     return res.status(200).json({ success: true })
 }
 
+const addToCart = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { productId } = req.body
+        const currentUser = res.locals.user as User
+
+        const userRepository = AppDataSource.getRepository(User)
+
+        // DB에서 최신 정보 조회
+        const userInfo = await userRepository.findOne({
+            where: { id: currentUser.id }
+        })
+
+        if (!userInfo) {
+            return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' })
+        }
+
+        // cart 초기화
+        if (!userInfo.cart) {
+            userInfo.cart = []
+        }
+
+        // 중복 체크
+        const existingItem = userInfo.cart.find(
+            item => item.productId === productId
+        )
+
+        if (existingItem) {
+            // 중복이면 수량 증가
+            existingItem.quantity += 1
+
+            await userRepository.save(userInfo)
+
+            return res.status(200).json({
+                message: `장바구니 수량이 ${existingItem.quantity}개로 증가했습니다.`,
+                cart: userInfo.cart
+            })
+        } else {
+            // 없으면 새로 추가
+            userInfo.cart.push({
+                productId,
+                quantity: 1
+            })
+
+            await userRepository.save(userInfo)
+
+            return res.status(200).json({
+                message: '장바구니에 추가되었습니다.',
+                cart: userInfo.cart
+            })
+        }
+    } catch (error) {
+        console.error(error)
+        next(error)
+    }
+}
+
 const router = Router()
 router.get("/me", userMiddleware, authMiddleware, me)
 router.post("/register", register)
 router.post("/login", login)
 router.post("/logout", userMiddleware, authMiddleware, logout)
+router.post("/cart", userMiddleware, authMiddleware, addToCart)
 
 export default router;

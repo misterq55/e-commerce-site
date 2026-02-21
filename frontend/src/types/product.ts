@@ -7,6 +7,9 @@ export interface Product {
   continents: number;
   sold: number;
   views: number;
+  writer: number;
+  cart: number[];
+  history: number[];
 }
 
 export interface Filters {

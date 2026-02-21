@@ -2,6 +2,11 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { IsEmail, Length } from 'class-validator'
 import bcrypt from 'bcrypt'
 
+export interface CartItem {
+  productId: number
+  quantity: number
+}
+
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -24,6 +29,9 @@ export class User {
 
   @Column({ nullable: true })
   image?: string
+
+  @Column('simple-json', { default: '[]' })
+  cart!: CartItem[]
 
   @CreateDateColumn()
   createdAt!: Date

@@ -65,6 +65,20 @@ export const logoutUser = createAsyncThunk(
   }
 )
 
+// Async thunk for add to cart
+export const addToCart = createAsyncThunk(
+  'user/addToCart',
+  async (body: { productId: number }, thunkAPI) => {
+    try {
+      const response = await api.post('/api/users/cart', body)
+      return response.data
+    } catch (err: any) {
+      console.error(err)
+      return thunkAPI.rejectWithValue(err.response?.data || err.message)
+    }
+  }
+)
+
 const userSlice = createSlice({
   name: 'user',
   initialState,
@@ -127,6 +141,22 @@ const userSlice = createSlice({
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null
         state.error = null
+      })
+
+    // Add to cart
+    builder
+      .addCase(addToCart.pending, (state) => {
+        state.isLoading = true
+        state.error = null
+      })
+      .addCase(addToCart.fulfilled, (state) => {
+        state.isLoading = false
+        toast.success('장바구니에 추가되었습니다!')
+      })
+      .addCase(addToCart.rejected, (state, action) => {
+        state.isLoading = false
+        state.error = action.error.message || 'Add to cart failed'
+        toast.error(action.error.message || '장바구니 추가에 실패했습니다.')
       })
   },
 })
