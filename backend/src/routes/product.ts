@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction, Router } from "express"
 import { Product } from "../entities/Product"
 import { AppDataSource } from '../data-source'
+import { In } from 'typeorm'
 import authMiddleware from '../middlewares/auth'
 import userMiddleware from '../middlewares/user'
 import multer, { FileFilterCallback } from "multer"
@@ -14,10 +15,10 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 const storage = multer.diskStorage({
-    destination: function (req: Request, file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) {
+    destination: function (_req: Request, _file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) {
         cb(null, uploadDir)
     },
-    filename: function (req: Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) {
+    filename: function (_req: Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) {
         cb(null, `${Date.now()}_${file.originalname}`)
     }
 })
@@ -25,7 +26,7 @@ const storage = multer.diskStorage({
 const upload = multer({
     storage: storage,
     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB 제한
-    fileFilter: (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
+    fileFilter: (_req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
         const allowedTypes = /jpeg|jpg|png|gif|webp/
         const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase())
         const mimetype = allowedTypes.test(file.mimetype)
@@ -38,7 +39,7 @@ const upload = multer({
     }
 }).single('file')
 
-const uploadImage = (req: Request, res: Response, next: NextFunction) => {
+const uploadImage = (req: Request, res: Response, _next: NextFunction) => {
     upload(req, res, (err: any) => {
         if (err) {
             return res.status(500).json({ message: err.message })
@@ -138,7 +139,7 @@ const findProducts = async (req: Request, res: Response, next: NextFunction) => 
 
     try {
         const productRepository = AppDataSource.getRepository(Product)
-        let products = []
+        let products: Product[] = []
 
         if (type === 'single') {
             // 단일 상품 조회
@@ -151,10 +152,10 @@ const findProducts = async (req: Request, res: Response, next: NextFunction) => 
             }
 
             products = [product]
-        } else {
+        } else if (type === 'array') {
             // 여러 상품 조회 (쉼표로 구분된 ID들)
             const ids = productId.split(',').map(id => Number(id.trim()))
-            products = await productRepository.findByIds(ids)
+            products = await productRepository.findBy({ id: In(ids) })
         }
 
         return res.status(200).json(products)

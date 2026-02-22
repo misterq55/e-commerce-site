@@ -2,22 +2,43 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { toast } from 'react-toastify'
 import api from '../api/axios'
 
+export interface CartItem {
+  productId: number
+  quantity: number
+}
+
+export interface CartDetail {
+  id: number
+  title: string
+  description: string
+  price: number
+  images: string[]
+  sold: number
+  continents: number
+  views: number
+  writer: number
+  quantity: number
+}
+
 interface User {
   id: number
   email: string
   name: string
   role: number
   image?: string
+  cart?: CartItem[]
 }
 
 interface UserState {
   user: User | null
+  cartDetail: CartDetail[]
   isLoading: boolean
   error: string | null
 }
 
 const initialState: UserState = {
   user: null,
+  cartDetail: [],
   isLoading: false,
   error: null,
 }
@@ -71,6 +92,27 @@ export const addToCart = createAsyncThunk(
   async (body: { productId: number }, thunkAPI) => {
     try {
       const response = await api.post('/api/users/cart', body)
+      return response.data
+    } catch (err: any) {
+      console.error(err)
+      return thunkAPI.rejectWithValue(err.response?.data || err.message)
+    }
+  }
+)
+
+// Async thunk for get cart items
+export const getCartItems = createAsyncThunk(
+  'user/getCartItems',
+  async (body: { cartItemIds: number[], userCart: CartItem[] }, thunkAPI) => {
+    try {
+      const response = await api.post(`/api/products/${body.cartItemIds}?type=array`, body)
+      body.userCart.forEach((cartItem: CartItem) => {
+        response.data.forEach((productDetail: { id: number; quantity?: number }, index: number) => {
+          if (cartItem.productId === productDetail.id) {
+            response.data[index].quantity = cartItem.quantity
+          }
+        })
+      })
       return response.data
     } catch (err: any) {
       console.error(err)
@@ -141,6 +183,22 @@ const userSlice = createSlice({
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null
         state.error = null
+      })
+
+    // Get cart items
+    builder
+      .addCase(getCartItems.pending, (state) => {
+        state.isLoading = true
+        state.error = null
+      })
+      .addCase(getCartItems.fulfilled, (state, action) => {
+        state.isLoading = false
+        state.cartDetail = action.payload
+      })
+      .addCase(getCartItems.rejected, (state, action) => {
+        state.isLoading = false
+        state.error = action.error.message || 'Failed to load cart items'
+        toast.error('장바구니 상품을 불러오는데 실패했습니다.')
       })
 
     // Add to cart

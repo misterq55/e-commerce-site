@@ -46,7 +46,7 @@ frontend/src/
 │   └── HistoryPage.tsx       # Purchase history
 ├── store/
 │   ├── store.ts              # Redux store + redux-persist
-│   └── userSlice.ts          # User auth slice (login, register, addToCart)
+│   └── userSlice.ts          # User auth slice (login, register, addToCart, getCartItems)
 ├── types/
 │   └── product.ts            # Product, Filters, CartItem interfaces
 ├── utils/
@@ -77,6 +77,7 @@ VITE_API_URL=http://localhost:3000
 ```typescript
 interface UserState {
   user: User | null
+  cartDetail: CartDetail[]  // 장바구니 상품 상세 목록 (수량 포함)
   isLoading: boolean
   error: string | null
 }
@@ -124,6 +125,20 @@ export const addToCart = createAsyncThunk('user/addToCart', async (body) => {
   return response.data
 })
 
+export const getCartItems = createAsyncThunk('user/getCartItems', async (body) => {
+  const { cartItemIds, userCart } = body
+  const response = await api.post(`/api/products/${cartItemIds}?type=array`, body)
+  // userCart의 quantity를 response.data에 병합
+  userCart.forEach(cartItem => {
+    response.data.forEach((productDetail, index) => {
+      if (cartItem.productId === productDetail.id) {
+        response.data[index].quantity = cartItem.quantity
+      }
+    })
+  })
+  return response.data  // CartDetail[]
+})
+
 const userSlice = createSlice({
   name: 'user',
   initialState,
@@ -138,6 +153,9 @@ const userSlice = createSlice({
       })
       .addCase(addToCart.fulfilled, (state) => {
         toast.success('장바구니에 추가되었습니다!')
+      })
+      .addCase(getCartItems.fulfilled, (state, action) => {
+        state.cartDetail = action.payload
       })
   }
 })
@@ -185,6 +203,19 @@ export interface Product {
 export interface CartItem {
   productId: number
   quantity: number
+}
+
+export interface CartDetail {
+  id: number
+  title: string
+  description: string
+  price: number
+  images: string[]
+  sold: number
+  continents: number
+  views: number
+  writer: number
+  quantity: number  // userCart에서 병합된 수량
 }
 
 export interface Filters {

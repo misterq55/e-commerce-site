@@ -344,7 +344,7 @@ GET /api/products/1?type=single
 
 **Get Multiple Products:**
 ```
-GET /api/products/1,2,3
+GET /api/products/1,2,3?type=array
 ```
 
 **Response:** `200 OK`

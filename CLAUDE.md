@@ -132,7 +132,7 @@ pages/
   UploadProductPage.tsx
   CartPage.tsx
 store/
-  userSlice.ts   # Auth + cart state
+  userSlice.ts   # Auth + cart state (addToCart, getCartItems, CartDetail)
 types/
   product.ts     # Shared types
 ```
@@ -189,10 +189,26 @@ export class Product {
 4. Save to database (JSON format)
 5. Toast notification
 
+### Get Cart Items Flow
+1. Frontend: `dispatch(getCartItems({ cartItemIds, userCart }))`
+2. Redux: `GET /api/products/1,2,3?type=array`
+3. Backend: returns product list by IDs
+4. Redux: merges `quantity` from `userCart` into each product
+5. Result saved to `state.cartDetail: CartDetail[]`
+
 ### Data Structure
 ```typescript
 // User.cart in DB: [{"productId":1,"quantity":2}]
 // TypeScript: CartItem[] = [{ productId: 1, quantity: 2 }]
+
+// CartDetail (장바구니 상품 상세, Redux state.cartDetail)
+interface CartDetail {
+  id: number
+  title: string
+  price: number
+  images: string[]
+  quantity: number  // userCart에서 병합
+}
 ```
 
 ---
