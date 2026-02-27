@@ -100,12 +100,26 @@ export const addToCart = createAsyncThunk(
   }
 )
 
+// Async thunk for remove cart item
+export const removeCartItem = createAsyncThunk(
+  'user/removeCartItem',
+  async (body: { productId: number }, thunkAPI) => {
+    try {
+      const response = await api.delete(`/api/users/cart?productId=${body.productId}`)
+      return response.data
+    } catch (err: any) {
+      console.error(err)
+      return thunkAPI.rejectWithValue(err.response?.data || err.message)
+    }
+  }
+)
+
 // Async thunk for get cart items
 export const getCartItems = createAsyncThunk(
   'user/getCartItems',
   async (body: { cartItemIds: number[], userCart: CartItem[] }, thunkAPI) => {
     try {
-      const response = await api.post(`/api/products/${body.cartItemIds}?type=array`, body)
+      const response = await api.get(`/api/products/${body.cartItemIds}?type=array`)
       body.userCart.forEach((cartItem: CartItem) => {
         response.data.forEach((productDetail: { id: number; quantity?: number }, index: number) => {
           if (cartItem.productId === productDetail.id) {
@@ -201,14 +215,39 @@ const userSlice = createSlice({
         toast.error('장바구니 상품을 불러오는데 실패했습니다.')
       })
 
+    // Remove cart item
+    builder
+      .addCase(removeCartItem.pending, (state) => {
+        state.isLoading = true
+        state.error = null
+      })
+      .addCase(removeCartItem.fulfilled, (state, action) => {
+        state.isLoading = false
+        if (state.user) {
+          state.user.cart = action.payload.cart
+        }
+        state.cartDetail = state.cartDetail.filter(
+          item => item.id !== action.meta.arg.productId
+        )
+        toast.success('장바구니에서 삭제되었습니다.')
+      })
+      .addCase(removeCartItem.rejected, (state, action) => {
+        state.isLoading = false
+        state.error = action.error.message || 'Remove cart item failed'
+        toast.error('장바구니 삭제에 실패했습니다.')
+      })
+
     // Add to cart
     builder
       .addCase(addToCart.pending, (state) => {
         state.isLoading = true
         state.error = null
       })
-      .addCase(addToCart.fulfilled, (state) => {
+      .addCase(addToCart.fulfilled, (state, action) => {
         state.isLoading = false
+        if (state.user) {
+          state.user.cart = action.payload.cart
+        }
         toast.success('장바구니에 추가되었습니다!')
       })
       .addCase(addToCart.rejected, (state, action) => {

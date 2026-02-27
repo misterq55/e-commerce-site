@@ -7,6 +7,7 @@ import userMiddleware from '../middlewares/user'
 import multer, { FileFilterCallback } from "multer"
 import path from 'path'
 import fs from 'fs'
+import { User } from "../entities/User"
 
 // uploads 폴더 생성
 const uploadDir = path.join(__dirname, '../../uploads')

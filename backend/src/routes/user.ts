@@ -169,11 +169,38 @@ const addToCart = async (req: Request, res: Response, next: NextFunction) => {
     }
 }
 
+const removeFromCart = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const productId = Number(req.query.productId)
+        const currentUser = res.locals.user as User
+
+        const userRepository = AppDataSource.getRepository(User)
+
+        const userInfo = await userRepository.findOne({
+            where: { id: currentUser.id }
+        })
+
+        if (!userInfo) {
+            return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' })
+        }
+
+        userInfo.cart = userInfo.cart.filter(item => item.productId !== productId)
+
+        await userRepository.save(userInfo)
+
+        return res.status(200).json({ cart: userInfo.cart })
+    } catch (error) {
+        console.error(error)
+        next(error)
+    }
+}
+
 const router = Router()
 router.get("/me", userMiddleware, authMiddleware, me)
 router.post("/register", register)
 router.post("/login", login)
 router.post("/logout", userMiddleware, authMiddleware, logout)
 router.post("/cart", userMiddleware, authMiddleware, addToCart)
+router.delete("/cart", userMiddleware, authMiddleware, removeFromCart)
 
 export default router;

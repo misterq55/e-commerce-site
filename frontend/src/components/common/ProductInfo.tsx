@@ -1,6 +1,7 @@
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import type { Product } from '../../types/product'
-import type { AppDispatch } from '../../store/store'
+import type { RootState, AppDispatch } from '../../store/store'
 import { addToCart } from '../../store/userSlice'
 
 interface ProductInfoProps {
@@ -9,8 +10,14 @@ interface ProductInfoProps {
 
 const ProductInfo = ({ product }: ProductInfoProps) => {
     const dispatch = useDispatch<AppDispatch>()
+    const navigate = useNavigate()
+    const user = useSelector((state: RootState) => state.user?.user)
 
     const handleClick = () => {
+        if (!user) {
+            navigate('/login')
+            return
+        }
         dispatch(addToCart({ productId: product.id }))
     }
 
