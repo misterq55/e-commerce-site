@@ -31,6 +31,7 @@ function App() {
           {/* Main Layout - Public */}
           <Route element={<MainLayout />}>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/product/:productId" element={<DetailProductPage />} />
           </Route>
 
           {/* Auth Layout - Login/Register */}
@@ -43,7 +44,6 @@ function App() {
           <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
             {/* <Route path="/dashboard" element={<Dashboard />} /> */}
             <Route path="/product/upload" element={<UploadProductPage />} />
-            <Route path="/product/:productId" element={<DetailProductPage />} />
             <Route path="/user/cart" element={<CartPage />} />
             <Route path="/history" element={<HistoryPage />} />
           </Route>

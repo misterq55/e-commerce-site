@@ -41,9 +41,10 @@ const upload = multer({
 }).single('file')
 
 const uploadImage = (req: Request, res: Response, _next: NextFunction) => {
-    upload(req, res, (err: any) => {
+    upload(req, res, (err: unknown) => {
         if (err) {
-            return res.status(500).json({ message: err.message })
+            const message = err instanceof Error ? err.message : '파일 업로드에 실패했습니다.'
+            return res.status(500).json({ message })
         }
 
         if (!req.file) {

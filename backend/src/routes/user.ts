@@ -15,7 +15,7 @@ const register = async (req: Request, res: Response) => {
     const { email, name, password } = req.body;
 
     try {
-        let errors: any = {};
+        let errors: Record<string, string> = {};
 
         const userRepository = AppDataSource.getRepository(User)
         const emailUser = await userRepository.findOneBy({ email })
@@ -25,7 +25,6 @@ const register = async (req: Request, res: Response) => {
         if (nameUser) errors.name = "이미 해당 이름이 사용되었습니다."
 
         if (Object.keys(errors).length > 0) {
-            console.log('errors', errors)
             return res.status(400).json(errors)
         }
 
@@ -37,7 +36,6 @@ const register = async (req: Request, res: Response) => {
         errors = await validate(user)
 
         if (Object.keys(errors).length > 0) {
-            console.log('errors', errors)
             return res.status(400).json(errors)
         }
 
@@ -66,12 +64,11 @@ const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
     try {
-        let errors: any = {};
+        let errors: Record<string, string> = {};
 
         if (isEmpty(email)) errors.email = "이메일은 비워둘 수 없습니다"
         if (isEmpty(password)) errors.password = "비밀번호는 비워둘 수 없습니다"
         if (Object.keys(errors).length > 0) {
-            console.log('errors', errors)
             return res.status(400).json(errors)
         }
 
@@ -91,7 +88,7 @@ const login = async (req: Request, res: Response) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
-            maxAge: 60 * 60 * 1000 // 1시간
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7일
         })
 
         const { password: _, ...userWithoutPassword } = foundUser

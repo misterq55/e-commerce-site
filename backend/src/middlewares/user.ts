@@ -13,7 +13,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
         }
 
         // 토큰 검증
-        const decoded: any = jwt.verify(token, process.env.JWT_SECRET!)
+        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { email: string }
 
         const user = await AppDataSource.getRepository(User)
             .findOneBy({ email: decoded.email })
@@ -25,7 +25,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
 
         return next()
     } catch (error) {
-        console.log(error)
+        console.error(error)
         // 토큰이 잘못되었어도 그냥 통과 (인증 체크는 auth 미들웨어에서)
         return next()
     }
