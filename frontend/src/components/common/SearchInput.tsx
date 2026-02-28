@@ -1,6 +1,6 @@
 interface SearchInputProps {
   searchTerm?: string
-  onSearch: (event: any) => void
+  onSearch: (event: React.ChangeEvent<HTMLInputElement>) => void
 }
 
 const SearchInput = ({ searchTerm, onSearch }: SearchInputProps) => {

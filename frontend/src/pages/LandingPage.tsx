@@ -75,7 +75,7 @@ function LandingPage() {
     setSkip(0)
   }
 
-  const handleSearchTerm = (event: any) => {
+  const handleSearchTerm = (event: React.ChangeEvent<HTMLInputElement>) => {
     const body = {
       skip: 0,
       limit,

@@ -26,7 +26,7 @@ const UploadProductPage = () => {
     images: []
   })
 
-  const handleChange = (event: any) => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = event.target;
     setProduct(prevState => ({
       ...prevState,
@@ -34,14 +34,14 @@ const UploadProductPage = () => {
     }))
   }
 
-  const handleImages = (newImages: any) => {
+  const handleImages = (newImages: string[]) => {
     setProduct(prevState => ({
       ...prevState,
       images: newImages
     }))
   }
 
-  const handleSubmit = async (event: any) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const body = {

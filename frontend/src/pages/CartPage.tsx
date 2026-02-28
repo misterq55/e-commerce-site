@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux"
 import type { RootState, AppDispatch } from "../store/store"
-import { getCartItems, removeCartItem, type CartDetail } from "../store/userSlice"
+import { getCartItems, removeCartItem } from "../store/userSlice"
+import type { CartProduct } from "../types/product"
 import CartTable from "../components/common/CartTable";
 
 const CartPage = () => {
@@ -34,7 +35,7 @@ const CartPage = () => {
     }
   }, [cartDetail])
 
-  const calulateTotal = (cartItems : CartDetail[]) => {
+  const calulateTotal = (cartItems : CartProduct[]) => {
     let total = 0;
     cartItems.map(item => total += item.price * item.quantity)
     setTotal(total);

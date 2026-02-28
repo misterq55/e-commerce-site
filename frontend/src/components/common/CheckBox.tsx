@@ -1,7 +1,4 @@
-interface Continent {
-  _id: number
-  name: string
-}
+import type { Continent } from '../../types/product'
 
 interface CheckBoxProps {
   continents: Continent[]

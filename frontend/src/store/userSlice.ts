@@ -1,39 +1,35 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { toast } from 'react-toastify'
+import type { AxiosError } from 'axios'
 import api from '../api/axios'
-
-export interface CartItem {
-  productId: number
-  quantity: number
-}
-
-export interface CartDetail {
-  id: number
-  title: string
-  description: string
-  price: number
-  images: string[]
-  sold: number
-  continents: number
-  views: number
-  writer: number
-  quantity: number
-}
-
-interface User {
-  id: number
-  email: string
-  name: string
-  role: number
-  image?: string
-  cart?: CartItem[]
-}
+import type { CartProduct } from '../types/product'
+import type { User, CartItem } from '../types/user'
 
 interface UserState {
   user: User | null
-  cartDetail: CartDetail[]
+  cartDetail: CartProduct[]
   isLoading: boolean
   error: string | null
+}
+
+interface RegisterInput {
+  email: string
+  name: string
+  password: string
+}
+
+interface LoginInput {
+  email: string
+  password: string
+}
+
+interface CartActionInput {
+  productId: number
+}
+
+interface GetCartItemsInput {
+  cartItemIds: number[]
+  userCart: CartItem[]
 }
 
 const initialState: UserState = {
@@ -46,7 +42,7 @@ const initialState: UserState = {
 // Async thunk for register
 export const registerUser = createAsyncThunk(
   'user/register',
-  async ({ email, name, password }: { email: string; name: string; password: string }) => {
+  async ({ email, name, password }: RegisterInput) => {
     const response = await api.post('/api/users/register', {
       email,
       name,
@@ -59,7 +55,7 @@ export const registerUser = createAsyncThunk(
 // Async thunk for login
 export const loginUser = createAsyncThunk(
   'user/login',
-  async ({ email, password }: { email: string; password: string }) => {
+  async ({ email, password }: LoginInput) => {
     const response = await api.post('/api/users/login', {
       email,
       password,
@@ -89,13 +85,14 @@ export const logoutUser = createAsyncThunk(
 // Async thunk for add to cart
 export const addToCart = createAsyncThunk(
   'user/addToCart',
-  async (body: { productId: number }, thunkAPI) => {
+  async (body: CartActionInput, thunkAPI) => {
     try {
       const response = await api.post('/api/users/cart', body)
       return response.data
-    } catch (err: any) {
-      console.error(err)
-      return thunkAPI.rejectWithValue(err.response?.data || err.message)
+    } catch (err) {
+      const error = err as AxiosError
+      console.error(error)
+      return thunkAPI.rejectWithValue(error.response?.data || error.message)
     }
   }
 )
@@ -103,13 +100,14 @@ export const addToCart = createAsyncThunk(
 // Async thunk for remove cart item
 export const removeCartItem = createAsyncThunk(
   'user/removeCartItem',
-  async (body: { productId: number }, thunkAPI) => {
+  async (body: CartActionInput, thunkAPI) => {
     try {
       const response = await api.delete(`/api/users/cart?productId=${body.productId}`)
       return response.data
-    } catch (err: any) {
-      console.error(err)
-      return thunkAPI.rejectWithValue(err.response?.data || err.message)
+    } catch (err) {
+      const error = err as AxiosError
+      console.error(error)
+      return thunkAPI.rejectWithValue(error.response?.data || error.message)
     }
   }
 )
@@ -117,7 +115,7 @@ export const removeCartItem = createAsyncThunk(
 // Async thunk for get cart items
 export const getCartItems = createAsyncThunk(
   'user/getCartItems',
-  async (body: { cartItemIds: number[], userCart: CartItem[] }, thunkAPI) => {
+  async (body: GetCartItemsInput, thunkAPI) => {
     try {
       const response = await api.get(`/api/products/${body.cartItemIds}?type=array`)
       body.userCart.forEach((cartItem: CartItem) => {
@@ -128,9 +126,10 @@ export const getCartItems = createAsyncThunk(
         })
       })
       return response.data
-    } catch (err: any) {
-      console.error(err)
-      return thunkAPI.rejectWithValue(err.response?.data || err.message)
+    } catch (err) {
+      const error = err as AxiosError
+      console.error(error)
+      return thunkAPI.rejectWithValue(error.response?.data || error.message)
     }
   }
 )

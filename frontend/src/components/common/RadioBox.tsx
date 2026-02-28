@@ -1,8 +1,4 @@
-interface Price {
-  _id: number
-  name: string
-  array: number[]
-}
+import type { Price } from '../../types/product'
 
 interface RadioBoxProps {
   prices: Price[]

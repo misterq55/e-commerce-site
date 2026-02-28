@@ -12,6 +12,17 @@ export interface Product {
   history: number[];
 }
 
+export interface Continent {
+  _id: number;
+  name: string;
+}
+
+export interface Price {
+  _id: number;
+  name: string;
+  array: number[];
+}
+
 export interface Filters {
   continents: number[];
   prices: number[];
@@ -24,3 +35,5 @@ export interface FetchProductsParams {
   filters?: Partial<Filters>;
   searchTerm?: string;
 }
+
+export type CartProduct = Product & { quantity: number }

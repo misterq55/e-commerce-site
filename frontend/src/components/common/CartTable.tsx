@@ -1,7 +1,7 @@
-import type { CartDetail } from "../../store/userSlice"
+import type { CartProduct } from "../../types/product"
 
 interface Props {
-    products: CartDetail[]
+    products: CartProduct[]
     onRemoveItem: (productId: number) => void
 }
 

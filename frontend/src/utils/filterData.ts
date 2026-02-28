@@ -1,4 +1,6 @@
-const continents = [
+import type { Continent, Price } from '../types/product'
+
+const continents: Continent[] = [
     {
         "_id": 1,
         "name": "Africa"
@@ -29,7 +31,7 @@ const continents = [
     }
 ]
 
-const prices = [
+const prices: Price[] = [
     {
         "_id": 0,
         "name": "모두",
