@@ -33,10 +33,10 @@ const register = async (req: Request, res: Response) => {
         user.name = name
         user.password = password
 
-        errors = await validate(user)
+        const validationErrors = await validate(user)
 
-        if (Object.keys(errors).length > 0) {
-            return res.status(400).json(errors)
+        if (validationErrors.length > 0) {
+            return res.status(400).json(validationErrors)
         }
 
         await userRepository.save(user)

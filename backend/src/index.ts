@@ -21,7 +21,7 @@ if (!process.env.CLIENT_URL) {
 }
 
 const app = express()
-const port = process.env.PORT
+const port = process.env.PORT || 3000
 
 // 미들웨어
 app.use(cors({

@@ -13,7 +13,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME || 'admin',
   password: process.env.DB_PASSWORD || 'admin123',
   database: process.env.DB_DATABASE || 'ecommerce',
-  synchronize: true, // 개발 환경에서만 사용, 프로덕션에서는 false
+  synchronize: process.env.NODE_ENV !== 'production',
   logging: false,
   entities: [User, Product, Payment],
   migrations: [],

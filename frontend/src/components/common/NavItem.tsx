@@ -51,11 +51,11 @@ const NavItem = ({ item }: NavItemProps) => {
         )}
         {/* 뱃지 */}
         {item.badge !== undefined && item.badge > 0 && (
-          <li className='relative py-2 text-center border-b-4 cursor-pointer'>
+          <span className='relative py-2 text-center'>
             <span className="absolute top-0 inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-red-500 border-2 border-white rounded-full -right-3">
               {item.badge > 99 ? '99+' : item.badge}
             </span>
-          </li>
+          </span>
         )}
         </button>
       ) : (
