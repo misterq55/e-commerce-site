@@ -4,21 +4,18 @@ import type { RootState } from '../store/store'
 import api from '../api/axios'
 import { useNavigate } from 'react-router-dom'
 import FileUpload from '../components/common/FileUpload'
-
-const continents = [
-  { key: 1, value: 'Africa' },
-  { key: 2, value: 'Europe' },
-  { key: 3, value: 'Asia' },
-  { key: 4, value: 'North America' },
-  { key: 5, value: 'South America' },
-  { key: 6, value: 'Austrailia' },
-  { key: 7, value: 'Antarctica' },
-]
+import { continents } from '../utils/filterData'
 
 const UploadProductPage = () => {
   const userData = useSelector((state: RootState) => state.user);
   const navigate = useNavigate()
-  const [product, setProduct] = useState({
+  const [product, setProduct] = useState<{
+    title: string
+    description: string
+    price: number
+    continents: number
+    images: string[]
+  }>({
     title: '',
     description: '',
     price: 0,
@@ -91,7 +88,7 @@ const UploadProductPage = () => {
             name='continents' id='continents' onChange={handleChange} value={product.continents}
           >
             {continents.map(item => (
-              <option key={item.key} value={item.key}>{item.value}</option>
+              <option key={item._id} value={item._id}>{item.name}</option>
             ))}
           </select>
         </div>

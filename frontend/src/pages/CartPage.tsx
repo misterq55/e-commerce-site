@@ -8,7 +8,6 @@ import CartTable from "../components/common/CartTable";
 const CartPage = () => {
   const userData = useSelector((state: RootState) => state.user?.user);
   const cartDetail = useSelector((state: RootState) => state.user?.cartDetail);
-  console.log(cartDetail)
   const dispatch = useDispatch<AppDispatch>();
   const [total, setTotal] = useState(0);
 
@@ -37,7 +36,7 @@ const CartPage = () => {
 
   const calulateTotal = (cartItems : CartProduct[]) => {
     let total = 0;
-    cartItems.map(item => total += item.price * item.quantity)
+    cartItems.forEach(item => total += item.price * item.quantity)
     setTotal(total);
   }
 

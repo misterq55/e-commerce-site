@@ -8,8 +8,7 @@ import { AiOutlineShoppingCart } from 'react-icons/ai'
 function NavBar() {
   const { user } = useSelector((state: RootState) => state.user)
 
-  // TODO: Redux에서 장바구니 개수 가져오기
-  const cartItemCount = 3 // 임시 값, 나중에 Redux state로 변경
+  const cartItemCount = user?.cart?.reduce((sum, item) => sum + item.quantity, 0) ?? 0
 
   // 로그인한 사용자만 볼 수 있는 NavItem들
   const navItems: NavItemData[] = user ? [
